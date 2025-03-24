@@ -33,8 +33,6 @@ Profile Microservice отвечает за управление пользова
 - Обмен сообщениями через Kafka.
 - Логирование изменений в таблицу аудита (только `create` и `update`).
 - Интеграция с PostgreSQL.
-- JWT-аутентификация.
-- Автоматическая генерация документации (Swagger/OpenAPI) для управления сервисом.
 
 ## Архитектура
 
@@ -141,10 +139,8 @@ Profile Microservice отвечает за управление пользова
 - PostgreSQL
 - Lombok
 - MapStruct
-- Spring Security (JWT)
 - Spring AOP
 - Apache Kafka
-- Swagger/OpenAPI
 - Logback (Slf4j)
 
 ## Обработка ошибок (Exception Handling)
@@ -156,7 +152,6 @@ Profile Microservice отвечает за управление пользова
 ## Безопасность
 
 - Используется Spring Security для авторизации.
-- JWT используется для контроля доступа к Kafka-сообщениям.
 
 ## Логирование и мониторинг
 
