@@ -32,8 +32,6 @@ Antifraud Microservice предназначен для выявления и б�
 - Логирование изменений в таблицу аудита (только `create` и `update`).
 - Автоматическое заполнение **Audit** через **AOP**.
 - Интеграция с PostgreSQL.
-- JWT-аутентификация.
-- Автоматическая генерация документации (Swagger/OpenAPI).
 
 ## Архитектура
 ### Сущности (Entities)
@@ -82,7 +80,6 @@ Antifraud Microservice предназначен для выявления и б�
 
 ### Конфигурация
 - `KafkaConfig` – конфигурация Kafka.
-- `SwaggerConfig` – настройка Swagger.
 
 ## Основные события Kafka
 ### 1. Создание подозрительного перевода
@@ -116,10 +113,8 @@ Antifraud Microservice предназначен для выявления и б�
 - PostgreSQL
 - Lombok
 - MapStruct
-- Spring Security (JWT)
 - **Spring Kafka**
 - **Spring AOP**
-- Swagger/OpenAPI
 - Logback (Slf4j)
 
 ## Обработка ошибок (Exception Handling)
