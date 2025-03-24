@@ -79,7 +79,6 @@
 
 ### Конфигурация
 - `KafkaConfig` – конфигурация Kafka для продюсеров и консюмеров.
-- `SwaggerConfig` – настройка Swagger.
 
 ---
 
@@ -119,7 +118,6 @@
 - Lombok
 - MapStruct
 - Spring AOP
-- Swagger/OpenAPI
 - Logback (Slf4j)
 
 ---
