@@ -36,7 +36,6 @@ Authorization Microservice отвечает за управление автор
 - Взаимодействие с другими сервисами через **Kafka**.
 - JWT-аутентификация.
 - Интеграция с **PostgreSQL**.
-- Автоматическая генерация документации (**Swagger/OpenAPI**).
 - Логирование изменений в таблицу **Audit** (через **AOP**).
 - Использование **констант или Enum**, где это целесообразно (например, для ролей и типов операций).
 
@@ -91,7 +90,6 @@ Authorization Microservice отвечает за управление автор
 ### Конфигурация
 
 - `KafkaConfig` – настройка Kafka.
-- `SwaggerConfig` – настройка Swagger.
 
 ---
 
@@ -129,7 +127,6 @@ Authorization Microservice отвечает за управление автор
 - **Lombok**
 - **MapStruct**
 - **Spring Security (JWT)**
-- **Swagger/OpenAPI**
 - **Logback (Slf4j)**
 
 ---
