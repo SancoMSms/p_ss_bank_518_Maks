@@ -31,7 +31,6 @@ Transfer Microservice предназначен для обработки пер�
 - Взаимодействие через Kafka (Producer/Consumer).
 - Автоматический аудит через AOP.
 - Интеграция с PostgreSQL.
-- JWT-аутентификация.
 - Логирование и мониторинг.
 
 ---
@@ -105,7 +104,6 @@ Transfer Microservice предназначен для обработки пер�
 - PostgreSQL
 - Lombok
 - MapStruct
-- Spring Security (JWT)
 - Apache Kafka
 - Logback (Slf4j)
 - AOP (Aspect-Oriented Programming)
@@ -127,7 +125,6 @@ Transfer Microservice предназначен для обработки пер�
 ## **Безопасность**
 
 - Kafka продюсер и консьюмеры работают через **Spring Security**.
-- Поддерживается аутентификация с JWT.
 - Логируются все действия пользователей.
 
 ---
