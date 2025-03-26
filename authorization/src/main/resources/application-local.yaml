@@ -23,7 +23,7 @@ spring:
     hibernate:
       ddl-auto: update
   liquibase:
-    default-schema: authorization
+    default-schema: auth
     change-log: db/changelog/db.changelog-master.yaml
     enabled: true
     drop-first: false
