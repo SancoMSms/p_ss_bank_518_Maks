@@ -2,8 +2,10 @@ package com.bank.history.Services;
 
 import com.bank.history.Entities.History;
 
-interface HistoryService {
+import java.util.List;
+
+public interface HistoryService {
     History save(History history);
-    History getById(int id);
-    History getAll();
+    History getHistoryById(long id);
+    List<History> getAll();
 }

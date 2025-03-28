@@ -24,3 +24,14 @@ spring:
     drop-first: false
   application:
     name: history-app
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: history-service
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      properties:
+        spring.json.trusted.packages: "*"
