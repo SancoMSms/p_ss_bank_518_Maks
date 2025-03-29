@@ -20,16 +20,23 @@ import java.util.Map;
 public class KafkaConfig {
 
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String TOPIC_NAME = "history-events";
-    private static final String GROUP_ID = "history-group";
 
-    // Создание топика (если его нет, Kafka создаст автоматически)
     @Bean
-    public NewTopic historyTopic() {
-        return new NewTopic(TOPIC_NAME, 1, (short) 1);
+    public NewTopic auditHistoryTopic() {
+        return new NewTopic("audit.history", 1, (short) 1);
     }
 
-    // Конфигурация Producer (отправителя)
+    @Bean
+    public NewTopic auditHistoryRequestTopic() {
+        return new NewTopic("audit.history.request", 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic auditHistoryResponseTopic() {
+        return new NewTopic("audit.history.response", 1, (short) 1);
+    }
+
+    // Конфигурация Producer (отправитель)
     @Bean
     public ProducerFactory<String, HistoryDto> producerFactory() {
         Map<String, Object> config = new HashMap<>();
@@ -45,12 +52,12 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // Конфигурация Consumer (слушателя)
+    // Конфигурация Consumer (слушатель)
     @Bean
     public ConsumerFactory<String, HistoryDto> consumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "history-group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
         config.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES, "*");

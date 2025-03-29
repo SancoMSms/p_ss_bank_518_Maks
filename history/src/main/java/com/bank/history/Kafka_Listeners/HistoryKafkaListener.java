@@ -1,8 +1,5 @@
 package com.bank.history.Kafka_Listeners;
 
-
-
-
 import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
 import com.bank.history.Mappers.HistoryMapper;
@@ -14,13 +11,21 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class HistoryKafkaListener {
+
     private final HistoryService historyService;
     private final HistoryMapper historyMapper;
 
-    @KafkaListener(topics = "history-events", groupId = "history-group")
+    // Обработка входящих событий аудита
+    @KafkaListener(topics = "audit.history", groupId = "history-group")
     public void consumeHistoryEvent(HistoryDto historyDto) {
-        // Преобразуем DTO в Entity перед сохранением
         History history = historyMapper.toEntity(historyDto);
         historyService.save(history);
+    }
+
+    // Обработка запросов на получение истории изменений
+    @KafkaListener(topics = "audit.history.request", groupId = "history-group")
+    public void consumeHistoryRequest(String requestId) {
+        HistoryDto historyDto = historyService.getHistoryByRequestId(requestId);
+        historyService.sendHistoryResponse(requestId, historyDto);
     }
 }

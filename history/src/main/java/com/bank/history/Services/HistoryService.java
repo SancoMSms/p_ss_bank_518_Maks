@@ -1,11 +1,10 @@
 package com.bank.history.Services;
 
+import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
 
-import java.util.List;
-
 public interface HistoryService {
-    History save(History history);
-    History getHistoryById(long id);
-    List<History> getAll();
+    void save(History history);
+    HistoryDto getHistoryByRequestId(String requestId);
+    void sendHistoryResponse(String requestId, HistoryDto historyDto);
 }

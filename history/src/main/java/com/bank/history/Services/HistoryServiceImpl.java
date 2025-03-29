@@ -1,34 +1,36 @@
 package com.bank.history.Services;
 
+import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
+import com.bank.history.Kafka_Listeners.HistoryKafkaProducer;
+import com.bank.history.Mappers.HistoryMapper;
 import com.bank.history.Repositories.HistoryRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class HistoryServiceImpl implements HistoryService {
-    private final HistoryRepository historyRepository;
 
-    @Autowired
-    public HistoryServiceImpl(HistoryRepository historyRepository) {
-        this.historyRepository = historyRepository;
-    }
-@Transactional
+    private final HistoryRepository historyRepository;
+    private final HistoryKafkaProducer historyKafkaProducer;
+    private final HistoryMapper historyMapper;
+
     @Override
-    public History save(History history) {
-        return historyRepository.save(history);
+    public void save(History history) {
+        historyRepository.save(history);
     }
-@Transactional
+
     @Override
-    public History getHistoryById(long id) {
-        return historyRepository.getById(id);
+    public HistoryDto getHistoryByRequestId(String requestId) {
+        Optional<History> historyOptional = historyRepository.findById(Long.parseLong(requestId));
+        return historyOptional.map(historyMapper::toDto).orElse(null);
     }
-@Transactional
+
     @Override
-    public List<History> getAll() {
-        return historyRepository.findAll();
+    public void sendHistoryResponse(String requestId, HistoryDto historyDto) {
+        historyKafkaProducer.sendHistoryResponse(requestId, historyDto);
     }
 }
