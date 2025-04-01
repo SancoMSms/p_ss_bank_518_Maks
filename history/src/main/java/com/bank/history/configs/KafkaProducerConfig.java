@@ -2,6 +2,7 @@ package com.bank.history.configs;
 
 import com.bank.history.DTO.HistoryDto;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -15,7 +16,8 @@ import java.util.Map;
 @EnableKafka
 @Configuration
 public class KafkaProducerConfig {
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String BOOTSTRAP_SERVERS;
 
     @Bean
     public ProducerFactory<String, HistoryDto> producerFactory() {

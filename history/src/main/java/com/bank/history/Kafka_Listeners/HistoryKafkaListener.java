@@ -16,14 +16,14 @@ public class HistoryKafkaListener {
     private final HistoryMapper historyMapper;
 
     // Обработка входящих событий аудита
-    @KafkaListener(topics = "audit.history", groupId = "history-group")
+    @KafkaListener(topics = "${spring.kafka.topics.audit-history}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeHistoryEvent(HistoryDto historyDto) {
         History history = historyMapper.toEntity(historyDto);
         historyService.save(history);
     }
 
     // Обработка запросов на получение истории изменений
-    @KafkaListener(topics = "audit.history.request", groupId = "history-group")
+    @KafkaListener(topics = "${spring.kafka.topics.audit-history-request}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeHistoryRequest(String requestId) {
         HistoryDto historyDto = historyService.getHistoryByRequestId(requestId);
         historyService.sendHistoryResponse(requestId, historyDto);
