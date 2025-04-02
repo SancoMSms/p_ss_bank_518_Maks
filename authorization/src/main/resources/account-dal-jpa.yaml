@@ -1,3 +1,4 @@
 spring:
   liquibase:
-    default-schema: authorization
+    default-schema: auth
+    change-log: classpath:/db/changelog/db.changelog-master.yaml  # Указываешь путь к основному changelog файлу

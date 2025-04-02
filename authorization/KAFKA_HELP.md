@@ -58,15 +58,14 @@ Authorization Microservice отвечает за управление автор
 ### Репозитории (Repositories)
 
 - `UserRepository` – управление пользователями.
-- `RoleRepository` – управление ролями.
 - `AuditRepository` – управление аудитом.
 
 ### Сервисный слой (Services)
 
 - `UserService` – интерфейс CRUD-операций.
 - `UserServiceImpl` – реализация бизнес-логики.
-- `RoleService` – интерфейс CRUD-операций для ролей.
-- `RoleServiceImpl` – реализация логики ролей.
+- `RoleService` – интерфейс CRUD-операций для ролей. - не нужен
+- `RoleServiceImpl` – реализация логики ролей. - не нужен
 - `AuditService` – интерфейс аудита.
 - `AuditServiceImpl` – реализация логирования изменений.
 
@@ -91,7 +90,8 @@ Authorization Microservice отвечает за управление автор
 
 - `KafkaConfig` – настройка Kafka.
 
----
+
+
 
 ## Основные сценарии Kafka
 
