@@ -1,7 +1,8 @@
-package com.bank.authorization.Services;
+package com.bank.authorization.audit;
 
+import com.bank.authorization.DTO.AuditDto;
 import com.bank.authorization.Entities.Audit;
-import com.bank.authorization.Repositories.AuditRepository;
+import com.bank.authorization.Services.AuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,20 @@ public class AuditServiceImpl implements AuditService {
         this.auditRepository = auditRepository;
     }
 
-
     @Override
-    public void audit(OffsetDateTime modifiedAt, String modifiedBy) {
+    public void audit(AuditDto auditDTO) {
         Audit audit = new Audit();
-        audit.setModifiedAt(modifiedAt); // когда изменил
-        audit.setModifiedBy(modifiedBy); // кто изменили
-        auditRepository.save(audit);
+        audit.setEntityType(auditDTO.getEntityType());
+        audit.setOperationType(auditDTO.getOperationType());
+        audit.setCreatedBy(auditDTO.getCreatedBy());
+        audit.setModifiedBy(auditDTO.getModifiedBy());
+        audit.setCreatedAt(auditDTO.getCreatedAt());
+        audit.setModifiedAt(auditDTO.getModifiedAt());
+        audit.setNewEntityJson(auditDTO.getNewEntityJson());
+        audit.setEntityJson(auditDTO.getEntityJson());
+
+        this.auditRepository.save(audit);
+
     }
 }
+

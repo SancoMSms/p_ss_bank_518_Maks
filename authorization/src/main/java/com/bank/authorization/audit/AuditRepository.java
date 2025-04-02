@@ -1,4 +1,4 @@
-package com.bank.authorization.Repositories;
+package com.bank.authorization.audit;
 
 import com.bank.authorization.Entities.Audit;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,13 +2,22 @@ package com.bank.authorization.DTO;
 
 import com.bank.authorization.Entities.Role;
 import com.bank.authorization.Entities.User;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record UserResponse(
-        Long id,
-        Role role,
-        String profileId) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDto{
 
-    public static UserResponse fromEntity(User user){
-        return new UserResponse(user.getId(), user.getRole(),user.getProfileId());
+        Role role;
+        Long profileId;
+    String password;
+
+    public static UserDto fromUser(User user) {
+        return new UserDto(user.getRoles()
+                , user.getProfileId()
+                , user.getPassword());
     }
 }
