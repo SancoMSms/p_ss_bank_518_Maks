@@ -9,7 +9,6 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface HistoryMapper {
-    HistoryMapper INSTANCE = Mappers.getMapper(HistoryMapper.class);
 
     HistoryDto toDto(History entity);
 
