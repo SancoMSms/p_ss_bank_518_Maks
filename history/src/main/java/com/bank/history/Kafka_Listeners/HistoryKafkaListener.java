@@ -16,8 +16,9 @@ public class HistoryKafkaListener {
 
     private final HistoryService historyService;
     private final HistoryMapper historyMapper;
+    private final HistoryKafkaProducer historyKafkaProducer;
 
-    // Обработка входящих событий аудита
+    // TODO Обработка входящих событий аудита
     @KafkaListener(topics = "${spring.kafka.topics.audit-history}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeHistoryEvent(HistoryDto historyDto) {
         log.info("Получено сообщение в 'audit-history': {}", historyDto);
@@ -29,24 +30,25 @@ public class HistoryKafkaListener {
             log.info("Сообщение успешно обработано и сохранено в БД");
         } catch (Exception e) {
             log.error("Ошибка при обработке сообщения: {}", historyDto, e);
-        }finally {
+        } finally {
             long endTime = System.currentTimeMillis();
             log.info("Время обработки сообщения: {} мс", (endTime - startTime));
         }
     }
 
-    // Обработка запросов на получение истории изменений
+    // TODO Обработка запросов на получение истории изменений
     @KafkaListener(topics = "${spring.kafka.topics.audit-history-request}", groupId = "${spring.kafka.consumer.group-id}")
-    public void consumeHistoryRequest(String requestId) {
-        log.info("Получен запрос на историю изменений: requestId={}", requestId);
+    public void consumeHistoryRequest(String id) {
+        log.info("Получен запрос на историю изменений: requestId={}", id);
         long startTime = System.currentTimeMillis();
+
         try {
-            HistoryDto historyDto = historyService.getHistoryByRequestId(requestId);
-            historyService.sendHistoryResponse(requestId, historyDto);
-            log.info("Ответ на запрос истории успешно отправлен: requestId={}", requestId);
-        }catch (Exception e) {
-            log.error("Ошибка при обработке запроса истории: requestId={}", requestId, e);
-        }finally {
+            HistoryDto historyDto = historyService.getHistoryById(id);
+            historyKafkaProducer.sendHistoryResponse(id, historyDto);
+            log.info(" запрос успешно обработан: {}", (id));
+        } catch (Exception e) {
+            log.error("Ошибка при обработке запроса истории: requestId={}", id, e);
+        } finally {
             long endTime = System.currentTimeMillis();
             log.info("Время обработки запроса: {} мс", (endTime - startTime));
         }

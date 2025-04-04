@@ -21,33 +21,35 @@ public class HistoryServiceImpl implements HistoryService {
     private final HistoryMapper historyMapper;
 
     @Override
-    public void save(History history) {
+    public History save(History history) {
         log.info("Сохранение истории: {}", history);
         try {
             historyRepository.save(history);
             log.info("История успешно сохранена: id={}", history.getId());
+            return history;
         } catch (Exception e) {
             log.error("Ошибка при сохранении истории: {}", history, e);
+            throw new RuntimeException("Ошибка при сохранении истории", e); //TODO прикидываем исключения выше
         }
     }
 
     @Override
-    public HistoryDto getHistoryByRequestId(String requestId) {
-        log.info("Поиск истории по requestId={}", requestId);
+    public HistoryDto getHistoryById(String id) {
+        log.info("Поиск истории по requestId={}", id);
         try {
-            Optional<History> historyOptional = historyRepository.findById(Long.parseLong(requestId));
+            Optional<History> historyOptional = historyRepository.findById(Long.parseLong(id));
             if (historyOptional.isPresent()) {
                 return historyMapper.toDto(historyOptional.get());
             } else {
-                log.warn("История не найдена для requestId={}", requestId);
+                log.warn("История не найдена для requestId={}", id);
                 return null;
             }
         } catch (NumberFormatException e) {
-            log.error("Некорректный формат requestId: {}", requestId, e);
-            return null;
+            log.error("Некорректный формат requestId: {}", id, e);
+            throw new RuntimeException("Некорректный формат requestId: " + id, e);
         } catch (Exception e) {
-            log.error("Ошибка при получении истории по requestId={}", requestId, e);
-            return null;
+            log.error("Ошибка при получении истории по requestId={}", id, e);
+            throw new RuntimeException("Ошибка при получении истории по requestId: " + id, e);
         }
     }
 
@@ -59,6 +61,7 @@ public class HistoryServiceImpl implements HistoryService {
             log.info("История успешно отправлена: requestId={}", requestId);
         } catch (Exception e) {
             log.error("Ошибка при отправке истории в Kafka: requestId={}, данные={}", requestId, historyDto, e);
+            throw new RuntimeException();
         }
     }
 }

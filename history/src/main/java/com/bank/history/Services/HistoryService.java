@@ -4,7 +4,7 @@ import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
 
 public interface HistoryService {
-    void save(History history);
-    HistoryDto getHistoryByRequestId(String requestId);
+    History save(History history);
+    HistoryDto getHistoryById(String id);
     void sendHistoryResponse(String requestId, HistoryDto historyDto);
 }

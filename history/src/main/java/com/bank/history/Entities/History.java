@@ -2,32 +2,32 @@ package com.bank.history.Entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table
+@Table(name = "history")
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name = "transfer_audit_id")
-    private long transferAuditId;
+    @Column(name = "transfer_audit_id", nullable = false)
+    private Long transferAuditId;
 
-    @Column(name = "profile_audit_id")
-    private long profileAuditId;
+    @Column(name = "profile_audit_id", nullable = false)
+    private Long profileAuditId;
 
-    @Column(name = "account_audit_id")
-    private long accountAuditId;
+    @Column(name = "account_audit_id", nullable = false)
+    private Long accountAuditId;
 
-    @Column(name = "anti_fraud_audit_id")
-    private long antiFraudAuditId;
+    @Column(name = "anti_fraud_audit_id", nullable = false)
+    private Long antiFraudAuditId;
 
-    @Column(name = "public_bank_info_audit_id")
-    private long publicBankInfoAuditId;
+    @Column(name = "public_bank_info_audit_id", nullable = false)
+    private Long publicBankInfoAuditId;
 
-    @Column(name = "authorization_audit_id")
-    private long authorizationAuditId;
+    @Column(name = "authorization_audit_id", nullable = false)
+    private Long authorizationAuditId;
 }
