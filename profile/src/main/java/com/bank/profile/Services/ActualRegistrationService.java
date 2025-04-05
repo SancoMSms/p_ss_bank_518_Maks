@@ -1,13 +1,14 @@
 package com.bank.profile.Services;
 
+import com.bank.profile.DTO.ActualRegistrationDto;
 import com.bank.profile.Entities.ActualRegistration;
 
 import java.util.List;
 
 public interface ActualRegistrationService {
-    ActualRegistration create(ActualRegistration actualRegistration);
+    ActualRegistration create(ActualRegistrationDto actualRegistrationDto);
 
-    ActualRegistration update(ActualRegistration actualRegistration);
+    ActualRegistration update(ActualRegistrationDto actualRegistrationDto);
 
     void delete(Long id);
 

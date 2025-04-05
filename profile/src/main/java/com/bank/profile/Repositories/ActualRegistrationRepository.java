@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ActualRegistrationRepository extends JpaRepository<ActualRegistration, Long> {
+    public void deleteById(Long id);
 }

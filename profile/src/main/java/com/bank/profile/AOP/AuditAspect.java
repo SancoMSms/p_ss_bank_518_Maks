@@ -2,14 +2,12 @@ package com.bank.profile.AOP;
 
 import com.bank.profile.Entities.Profile;
 import com.bank.profile.Services.AuditService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.time.Instant;
 
 @Aspect
 @Component
@@ -25,7 +23,7 @@ public class AuditAspect {
 
     @AfterReturning(value = "execution(* com.bank.profile.Services.ProfileServiceImpl.update(..))", returning = "updatedProfile")
     public void logProfileUpdate(JoinPoint joinPoint, Profile updatedProfile) {
-        Profile oldProfile = (Profile) joinPoint.getArgs()[0]; // Получаем старое состояние из аргументов метода
+        Profile oldProfile = (Profile) joinPoint.getArgs()[0];
         logAudit("Profile", "UPDATE", updatedProfile, oldProfile);
     }
 
@@ -36,13 +34,13 @@ public class AuditAspect {
             auditService.logAuditEvent(
                     entityType,
                     operationType,
-                    "SYSTEM",  // Можно заменить на SecurityContextHolder.getContext().getAuthentication().getName()
+                    "SYSTEM",
                     "SYSTEM",
                     newEntityJson,
                     oldEntityJson
             );
         } catch (Exception e) {
-            e.printStackTrace(); // Логируем ошибку сериализации
+            e.printStackTrace();
         }
     }
 }

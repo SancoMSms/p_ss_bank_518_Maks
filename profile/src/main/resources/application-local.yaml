@@ -26,6 +26,12 @@ spring:
     name: profile-app
 
   kafka:
+    topics:
+      profile-create: profile.create
+      profile-update: profile.update
+      profile-delete: profile.delete
+      profile-get: profile.get
+
     bootstrap-servers: localhost:9092
     consumer:
       group-id: profile-group

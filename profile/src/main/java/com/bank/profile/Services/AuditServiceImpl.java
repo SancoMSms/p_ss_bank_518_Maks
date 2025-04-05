@@ -1,13 +1,11 @@
 package com.bank.profile.Services;
 
 import com.bank.profile.Entities.Audit;
-import com.bank.profile.Services.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -27,14 +25,13 @@ public class AuditServiceImpl implements AuditService {
         audit.setOperationType(operationType);
         audit.setCreatedBy(createdBy);
         audit.setModifiedBy(modifiedBy);
-        audit.setCreatedAt(new Date(System.currentTimeMillis())); // Устанавливаем текущее время
-        audit.setModifiedAt(new Date(System.currentTimeMillis())); // Устанавливаем текущее время
+        audit.setCreatedAt(new Date(System.currentTimeMillis()));
+        audit.setModifiedAt(new Date(System.currentTimeMillis()));
         audit.setNewEntityJson(newEntityJson);
         audit.setEntityJson(entityJson);
 
         auditLogs.add(audit);
 
-        // Отправляем событие в Kafka
         kafkaTemplate.send(AUDIT_TOPIC, "Audit Log: " + audit.toString());
     }
 
