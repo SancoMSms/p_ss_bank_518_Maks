@@ -8,6 +8,8 @@ import com.bank.profile.Repositories.ActualRegistrationRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
-    public ActualRegistration create(ActualRegistrationDto actualRegistrationDto) {
+    public ActualRegistration create(@Valid @NotNull ActualRegistrationDto actualRegistrationDto) {
         logger.info("Creating actual registration: {}", actualRegistrationDto);
         createCounter.increment();
         try {
@@ -55,7 +57,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
-    public ActualRegistration update(ActualRegistrationDto actualRegistrationDto) {
+    public ActualRegistration update(@Valid @NotNull ActualRegistrationDto actualRegistrationDto) {
         logger.info("Updating actual registration: {}", actualRegistrationDto);
         updateCounter.increment();
         try {
@@ -67,7 +69,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(@NotNull Long id) {
         logger.info("Deleting actual registration by ID: {}", id);
         deleteCounter.increment();
         try {
@@ -79,7 +81,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
-    public ActualRegistration getActualRegistration(Long id) {
+    public ActualRegistration getActualRegistration(@NotNull Long id) {
         logger.info("Fetching actual registration by ID: {}", id);
         try {
             return actualRegistrationRepository.getById(id);

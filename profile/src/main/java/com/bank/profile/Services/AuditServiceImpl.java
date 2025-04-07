@@ -4,6 +4,8 @@ import com.bank.profile.Entities.Audit;
 import com.bank.profile.Kafka.KafkaErrorProducer;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +48,14 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
-    public void logAuditEvent(String entityType, String operationType, String createdBy, String modifiedBy, String newEntityJson, String entityJson) {
+    public void logAuditEvent(
+            @NotNull @Size(min = 1, max = 100) String entityType,
+            @NotNull @Size(min = 1, max = 100) String operationType,
+            @NotNull @Size(min = 1, max = 100) String createdBy,
+            @NotNull @Size(min = 1, max = 100) String modifiedBy,
+            @NotNull @Size(min = 1, max = 500) String newEntityJson,
+            @NotNull @Size(min = 1, max = 500) String entityJson) {
+
         logger.info("Logging audit event: EntityType: {}, OperationType: {}, CreatedBy: {}, ModifiedBy: {}, NewEntityJson: {}, EntityJson: {}",
                 entityType, operationType, createdBy, modifiedBy, newEntityJson, entityJson);
 

@@ -8,6 +8,7 @@ import com.bank.profile.Repositories.RegistrationRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public Registration create(RegistrationDto registrationDto) {
+    public Registration create(@Valid RegistrationDto registrationDto) {
         logger.info("Creating registration: {}", registrationDto);
         createCounter.increment();
         try {
@@ -55,7 +56,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public Registration update(RegistrationDto registrationDto) {
+    public Registration update(@Valid RegistrationDto registrationDto) {
         logger.info("Updating registration: {}", registrationDto);
         updateCounter.increment();
         try {

@@ -8,6 +8,7 @@ import com.bank.profile.Repositories.PassportRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class PassportServiceImpl implements PassportService {
     }
 
     @Override
-    public Passport create(PassportDto passportDto) {
+    public Passport create(@Valid PassportDto passportDto) {
         logger.info("Creating passport: {}", passportDto);
         createCounter.increment();
         try {
@@ -55,7 +56,7 @@ public class PassportServiceImpl implements PassportService {
     }
 
     @Override
-    public Passport update(PassportDto passportDto) {
+    public Passport update(@Valid PassportDto passportDto) {
         logger.info("Updating passport: {}", passportDto);
         updateCounter.increment();
         try {

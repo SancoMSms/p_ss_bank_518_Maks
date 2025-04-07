@@ -7,6 +7,8 @@ import com.bank.profile.Mappers.AccountDetailsMapper;
 import com.bank.profile.Repositories.AccountDetailsRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,6 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
         this.accountDetailsMapper = accountDetailsMapper;
         this.kafkaErrorProducer = kafkaErrorProducer;
 
-        // Инициализация счетчиков для мониторинга
         this.createCounter = meterRegistry.counter("accountDetails.create.count");
         this.updateCounter = meterRegistry.counter("accountDetails.update.count");
         this.deleteCounter = meterRegistry.counter("accountDetails.delete.count");
@@ -42,7 +43,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
-    public AccountDetails create(AccountDetailsDto accountDetailsDto) {
+    public AccountDetails create(@Valid @NotNull AccountDetailsDto accountDetailsDto) {
         logger.info("Creating account details: {}", accountDetailsDto);
         createCounter.increment();
         try {
@@ -54,7 +55,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
-    public AccountDetails update(AccountDetailsDto accountDetailsDto) {
+    public AccountDetails update(@Valid @NotNull AccountDetailsDto accountDetailsDto) {
         logger.info("Updating account details: {}", accountDetailsDto);
         updateCounter.increment();
         try {
@@ -66,7 +67,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(@NotNull Long id) {
         logger.info("Deleting account details by ID: {}", id);
         deleteCounter.increment();
         try {
@@ -78,7 +79,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
-    public AccountDetails getAccountDetails(Long id) {
+    public AccountDetails getAccountDetails(@NotNull Long id) {
         logger.info("Fetching account details by ID: {}", id);
         try {
             return accountDetailsRepository.getById(id);

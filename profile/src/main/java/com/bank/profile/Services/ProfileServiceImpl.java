@@ -8,6 +8,8 @@ import com.bank.profile.Repositories.ProfileRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Profile create(ProfileDto profileDto) {
+    public Profile create(@Valid ProfileDto profileDto) {
         logger.info("Creating profile: {}", profileDto);
         createCounter.increment();
         try {
@@ -55,7 +57,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Profile update(ProfileDto profileDto) {
+    public Profile update(@Valid ProfileDto profileDto) {
         logger.info("Updating profile: {}", profileDto);
         updateCounter.increment();
         try {
@@ -67,7 +69,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(@NotNull Long id) {
         logger.info("Deleting profile by ID: {}", id);
         deleteCounter.increment();
         try {
@@ -79,7 +81,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Profile getProfile(Long id) {
+    public Profile getProfile(@NotNull Long id) {
         logger.info("Fetching profile by ID: {}", id);
         try {
             return profileRepository.getById(id);
