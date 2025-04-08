@@ -30,6 +30,7 @@ spring:
       audit-history: audit.history
       audit-history-request: audit.history.request
       audit-history-response: audit.history.response
+      audit-history-errors: audit-history-errors
 
 
     bootstrap-servers: localhost:9092

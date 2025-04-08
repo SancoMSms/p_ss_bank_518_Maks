@@ -1,7 +1,6 @@
 package com.bank.history.Mappers;
 
 
-import ch.qos.logback.core.model.ComponentModel;
 import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
 import org.mapstruct.Mapper;

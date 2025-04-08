@@ -2,6 +2,7 @@ package com.bank.history.Kafka_Listeners;
 
 import com.bank.history.DTO.HistoryDto;
 import com.bank.history.Entities.History;
+import com.bank.history.Exceptions.GlobalExceptionHandler;
 import com.bank.history.Mappers.HistoryMapper;
 import com.bank.history.Services.HistoryService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,8 @@ public class HistoryKafkaListener {
     private final HistoryMapper historyMapper;
     private final HistoryKafkaProducer historyKafkaProducer;
 
-    // TODO Обработка входящих событий аудита
-    @KafkaListener(topics = "${spring.kafka.topics.audit-history}", groupId = "${spring.kafka.consumer.group-id}")
+
+    @KafkaListener(topics = "${spring.kafka.topics.audit-history}", groupId = "${spring.kafka.consumer.group-id}", errorHandler = "globalExceptionHandler")
     public void consumeHistoryEvent(HistoryDto historyDto) {
         log.info("Получено сообщение в 'audit-history': {}", historyDto);
         long startTime = System.currentTimeMillis();
@@ -36,8 +37,7 @@ public class HistoryKafkaListener {
         }
     }
 
-    // TODO Обработка запросов на получение истории изменений
-    @KafkaListener(topics = "${spring.kafka.topics.audit-history-request}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topics.audit-history-request}", groupId = "${spring.kafka.consumer.group-id}", errorHandler = "globalExceptionHandler")
     public void consumeHistoryRequest(String id) {
         log.info("Получен запрос на историю изменений: requestId={}", id);
         long startTime = System.currentTimeMillis();

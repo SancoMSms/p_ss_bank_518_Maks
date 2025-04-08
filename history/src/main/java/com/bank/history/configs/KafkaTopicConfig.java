@@ -1,5 +1,6 @@
 package com.bank.history.configs;
 
+import lombok.Data;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 
 @EnableKafka
 @Configuration
+@Data
 public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.audit-history}")
     private String auditHistoryTopic;
@@ -17,6 +19,9 @@ public class KafkaTopicConfig {
 
     @Value("${spring.kafka.topics.audit-history-response}")
     private String auditHistoryResponseTopic;
+
+    @Value("${spring.kafka.topics.audit-history-errors}")
+    private String auditHistoryErrorsTopic;
 
     @Bean
     public NewTopic auditHistoryTopic() {
@@ -31,5 +36,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic auditHistoryResponseTopic() {
         return new NewTopic(auditHistoryResponseTopic, 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic auditHistoryErrorsTopic() {
+        return new NewTopic(auditHistoryErrorsTopic, 1, (short) 1);
     }
 }
