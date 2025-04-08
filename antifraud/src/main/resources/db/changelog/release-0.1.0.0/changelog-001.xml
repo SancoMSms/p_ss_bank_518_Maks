@@ -51,9 +51,9 @@
         </createTable>
     </changeSet>
     <changeSet author="Sergey" id="1672954987388-3">
-        <createTable remarks="подозрительные переводы по номеру карты" tableName="suspicious_card_transfer">
+        <createTable remarks="подозрительные переводы по номеру карты" tableName="suspicious_card_transfers">
             <column autoIncrement="true" name="id" remarks="технический идентификатор" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="suspicious_card_transfer_pkey"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="suspicious_card_transfers_pkey"/>
             </column>
             <column name="card_transfer_id" remarks="технический идентификатор на перевод по номеру телефона" type="BIGINT">
                 <constraints nullable="false"/>
@@ -94,7 +94,7 @@
         <addUniqueConstraint columnNames="account_transfer_id" constraintName="suspicious_account_transfers_id_key" tableName="suspicious_account_transfers"/>
     </changeSet>
     <changeSet author="Sergey" id="1672954987388-6">
-        <addUniqueConstraint columnNames="card_transfer_id" constraintName="suspicious_card_transfer_id_key" tableName="suspicious_card_transfer"/>
+        <addUniqueConstraint columnNames="card_transfer_id" constraintName="suspicious_card_transfers_id_key" tableName="suspicious_card_transfers"/>
     </changeSet>
     <changeSet author="Sergey" id="1672954987388-7">
         <addUniqueConstraint columnNames="phone_transfer_id" constraintName="suspicious_phone_transfers_id_key" tableName="suspicious_phone_transfers"/>
