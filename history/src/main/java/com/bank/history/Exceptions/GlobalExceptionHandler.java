@@ -13,7 +13,6 @@ import org.springframework.kafka.listener.ListenerExecutionFailedException;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 
-
 import java.time.Instant;
 import java.util.UUID;
 @Service
@@ -47,11 +46,8 @@ public class GlobalExceptionHandler implements ConsumerAwareListenerErrorHandler
                 Instant.now().toString(),
                 requestId
         );
-
         log.error("Глобальная ошибка обработки Kafka-сообщения: {}", errorResponse, exception);
-
         kafkaTemplate.send(kafkaTopicConfig.getAuditHistoryErrorsTopic(), requestId, errorResponse);
-
         return null;
     }
 }
