@@ -30,12 +30,18 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
     @Override
     public SuspiciousTransferDto createSuspiciousTransfer(TransferAntiFraudDto kafkaDto) {
         validateInput(kafkaDto);
-
         logger.info("Creating suspicious transfer of type: {}", kafkaDto.getEntityType());
-        SuspiciousTransferDto result = processTransfer(toSuspiciousTransferDto(kafkaDto));
-        suspiciousTransferProducer.sendCreateEvent(kafkaDto);
+
+        JpaRepository repository = repositoryManager.getRepository(kafkaDto.getEntityType());
+        SuspiciousTransferDto transferDto = toSuspiciousTransferDto(kafkaDto);
+
+        SuspiciousTransfer entity = mapper.toEntity(transferDto);
+        SuspiciousTransfer savedEntity = (SuspiciousTransfer) repository.save(entity);
+        SuspiciousTransferDto savedDto = mapper.toDto(savedEntity);
+        TransferAntiFraudDto savedKafkaDto = toTransferAntiFraudDto(savedDto);
+        suspiciousTransferProducer.sendCreateEvent(savedKafkaDto);
         logger.info("Suspicious transfer created and sent to Kafka");
-        return result;
+        return savedDto;
     }
 
     @Override
@@ -51,7 +57,8 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
         if (!repository.existsById(kafkaDto.getTransferId())) {
             throw new ValidationException("Suspicious transfer with ID " + kafkaDto.getTransferId() + " does not exist");
         }
-        SuspiciousTransfer entity = mapper.toEntity(transferDto);
+        SuspiciousTransfer entity = (SuspiciousTransfer) repository.findById(kafkaDto.getTransferId())
+                .orElseThrow(() -> new ValidationException("Suspicious transfer with ID " + kafkaDto.getTransferId() + " does not exist"));//TODO достаем из репы сущность, которую будем перезаписывать.
         SuspiciousTransfer savedEntity = (SuspiciousTransfer) repository.save(entity);
         SuspiciousTransferDto updatedTransferDto = mapper.toDto(savedEntity);
         TransferAntiFraudDto updatedKafkaDto = toTransferAntiFraudDto(updatedTransferDto);
@@ -75,16 +82,7 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
         logger.info("Suspicious transfer deleted and sent to Kafka");
     }
 
-    public SuspiciousTransferDto processTransfer(SuspiciousTransferDto transferDto) { //TODO убрать, тк используется только в одном месте
-
-        JpaRepository repository = repositoryManager.getRepository(transferDto.getEntityType());
-        SuspiciousTransfer entity = mapper.toEntity(transferDto);
-        SuspiciousTransfer saved = (SuspiciousTransfer) repository.save(entity);
-        transferDto.setId(saved.getId());
-        return transferDto;
-    }
-
-    private SuspiciousTransferDto toSuspiciousTransferDto(TransferAntiFraudDto kafkaDto){
+    private SuspiciousTransferDto toSuspiciousTransferDto(TransferAntiFraudDto kafkaDto) { //TODO тут чтото не работает
 
         SuspiciousTransferDto suspiciousTransferDto = suspiciousTransferDtoFactory.createSuspiciousTransferDto(kafkaDto.getEntityType());
         //suspiciousTransferDto.setId(kafkaDto.getTransferId());

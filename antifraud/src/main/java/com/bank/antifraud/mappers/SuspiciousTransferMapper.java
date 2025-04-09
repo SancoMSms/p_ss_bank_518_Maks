@@ -48,21 +48,21 @@ public interface SuspiciousTransferMapper {
         }
     }
 
-    @Mapping(target = "phone_transfer_id", source = "transfer_id")
+    @Mapping(target = "phone_transfer_id", source = "transferId")
     SuspiciousPhoneTransfer phoneDtoToEntity(SuspiciousPhoneTransferDto dto);
 
-    @Mapping(target = "transfer_id", source = "phone_transfer_id")
+    @Mapping(target = "transferId", source = "phone_transfer_id")
     SuspiciousPhoneTransferDto phoneEntityToDto(SuspiciousPhoneTransfer entity);
 
-    @Mapping(target = "account_transfer_id", source = "transfer_id")
+    @Mapping(target = "account_transfer_id", source = "transferId")
     SuspiciousAccountTransfer accountDtoToEntity(SuspiciousAccountTransferDto dto);
 
-    @Mapping(target = "transfer_id", source = "account_transfer_id")
+    @Mapping(target = "transferId", source = "account_transfer_id")
     SuspiciousAccountTransferDto accountEntityToDto(SuspiciousAccountTransfer entity);
 
-    @Mapping(target = "card_transfer_id", source = "transfer_id")
+    @Mapping(target = "card_transfer_id", source = "transferId")
     SuspiciousCardTransfer cardDtoToEntity(SuspiciousCardTransferDto dto);
 
-    @Mapping(target = "transfer_id", source = "card_transfer_id")
+    @Mapping(target = "transferId", source = "card_transfer_id")
     SuspiciousCardTransferDto cardEntityToDto(SuspiciousCardTransfer entity);
 }

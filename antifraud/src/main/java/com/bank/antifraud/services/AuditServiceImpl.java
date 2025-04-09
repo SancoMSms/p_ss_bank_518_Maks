@@ -6,6 +6,7 @@ import com.bank.antifraud.entities.Audit;
 import com.bank.antifraud.mappers.AuditMapper;
 import com.bank.antifraud.repositories.AuditRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,18 @@ public class AuditServiceImpl implements AuditService {
         return auditMapper.toDto(auditRepository.getById(id));
     }
 
+    private Long extractTransferId(String entityJson) {
+        try {
+            JsonNode jsonNode = objectMapper.readTree(entityJson);
+            JsonNode transferIdNode = jsonNode.get("id");
+            return transferIdNode != null && !transferIdNode.isNull()
+                    ? transferIdNode.asLong()
+                    : null;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot parse entity_json to extract transferId", e);
+        }
+    }
+
     @Override
     @Transactional
     public void logAudit(SuspiciousTransferDto suspiciousTransferDto,
@@ -37,6 +51,7 @@ public class AuditServiceImpl implements AuditService {
 
         AuditDto auditDto = new AuditDto();
         auditDto.setOperation_type(operation_type);
+        auditDto.setTransfer_id(suspiciousTransferDto.getTransferId());
 
         if (!"CREATE".equals(operation_type) && !"UPDATE".equals(operation_type)) {
             throw new IllegalArgumentException("Invalid operation type: " + operation_type);
@@ -52,7 +67,11 @@ public class AuditServiceImpl implements AuditService {
                 throw new RuntimeException("Failed to serialize object to JSON", e);
             }
         } else if ("UPDATE".equals(operation_type)) {
-            AuditDto oldAuditDto = getDtoById(suspiciousTransferDto.getTransferId());
+
+            List<Audit> previousAudits = auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(), suspiciousTransferDto.getTransferId());
+            Audit oldAuditDto = previousAudits.isEmpty() ? null : previousAudits.get(0);
+
+            //AuditDto oldAuditDto = getDtoById(suspiciousTransferDto.getTransferId());
             auditDto.setEntity_type(oldAuditDto.getEntity_type());
             auditDto.setCreated_by(oldAuditDto.getCreated_by());
             auditDto.setCreated_at(oldAuditDto.getCreated_at());

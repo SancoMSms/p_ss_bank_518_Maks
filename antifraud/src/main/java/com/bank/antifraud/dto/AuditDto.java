@@ -24,4 +24,6 @@ public class AuditDto {
     private String new_entity_json;
 
     private String entity_json;
+
+    private Long transfer_id;
 }

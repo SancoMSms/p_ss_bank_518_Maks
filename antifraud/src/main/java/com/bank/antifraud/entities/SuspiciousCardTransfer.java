@@ -13,6 +13,13 @@ public class SuspiciousCardTransfer extends SuspiciousTransfer {
     @Column(nullable = false, unique = true)
     private Long card_transfer_id;
 
+    @Override
+    public Long getTransferId() {
+        return card_transfer_id;
+    }
+
+    @Override
+    public void setTransferId(Long transferId) {
+        this.card_transfer_id = transferId;
+    }
 }
-
-

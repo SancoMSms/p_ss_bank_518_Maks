@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 @Data
 public class SuspiciousCardTransferDto extends SuspiciousTransferDto {
 
+
+
     public void setCard_transfer_id(Long card_transfer_id) {
         this.setTransferId(card_transfer_id);
     }

@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SuspiciousCardTransferRepository extends JpaRepository<SuspiciousCardTransfer, Long> {
-    Boolean existsByCard_transfer_id(Long transfer_id);
 }

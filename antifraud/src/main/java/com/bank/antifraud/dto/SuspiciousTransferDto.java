@@ -12,13 +12,13 @@ public abstract class SuspiciousTransferDto {
     @Setter(AccessLevel.NONE)
     private Long id;
 
-    private Boolean isBlocked;
+    private Boolean is_blocked;
 
-    private Boolean isSuspicious;
+    private Boolean is_suspicious;
 
-    private String blockedReason;
+    private String blocked_reason;
 
-    private String suspiciousReason;
+    private String suspicious_reason;
 
     private Long transferId;
 

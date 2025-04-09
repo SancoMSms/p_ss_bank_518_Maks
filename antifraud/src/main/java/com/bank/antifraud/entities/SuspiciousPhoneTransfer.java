@@ -13,9 +13,13 @@ public class SuspiciousPhoneTransfer extends SuspiciousTransfer {
     @Column(nullable = false, unique = true)
     private Long phone_transfer_id;
 
-    public void setPhone_transfer_id(Long id) {
-        this.phone_transfer_id = id;
-
+    @Override
+    public Long getTransferId() {
+        return phone_transfer_id;
     }
 
+    @Override
+    public void setTransferId(Long transferId) {
+        this.phone_transfer_id = transferId;
+    }
 }
