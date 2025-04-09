@@ -1,6 +1,6 @@
 package com.bank.history.configs;
 
-import lombok.Data;
+import lombok.Getter;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +9,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 
 @EnableKafka
 @Configuration
-@Data
+@Getter
 public class KafkaTopicConfig {
     @Value("${spring.kafka.topics.audit-history}")
     private String auditHistoryTopic;

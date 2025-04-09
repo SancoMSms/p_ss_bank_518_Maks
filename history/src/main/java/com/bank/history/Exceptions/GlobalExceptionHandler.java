@@ -15,23 +15,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.UUID;
-@Service
-@Slf4j
+
 @RequiredArgsConstructor
+@Service("globalExceptionHandler")
+@Slf4j
 public class GlobalExceptionHandler implements ConsumerAwareListenerErrorHandler {
 
-    private final KafkaTemplate<String, ErrorResponseDto> kafkaTemplate;
+    private final KafkaTemplate<String, ErrorResponseDto> errorResponseKafkaTemplate;
     private final KafkaTopicConfig kafkaTopicConfig;
-
-    private String determineErrorType(Throwable ex) {
-        if (ex instanceof EntityNotFoundException) {
-            return "EntityNotFound";
-        } else if (ex instanceof ValidationException) {
-            return "ValidationError";
-        } else {
-            return "GeneralError";
-        }
-    }
 
     @Override
     public Object handleError(Message<?> message, ListenerExecutionFailedException exception, Consumer<?, ?> consumer) {
@@ -46,8 +37,16 @@ public class GlobalExceptionHandler implements ConsumerAwareListenerErrorHandler
                 Instant.now().toString(),
                 requestId
         );
-        log.error("Глобальная ошибка обработки Kafka-сообщения: {}", errorResponse, exception);
-        kafkaTemplate.send(kafkaTopicConfig.getAuditHistoryErrorsTopic(), requestId, errorResponse);
+
+        log.error("Kafka Global Error [{}]: {}", errorType, errorResponse, exception);
+        errorResponseKafkaTemplate.send(kafkaTopicConfig.getAuditHistoryErrorsTopic(), requestId, errorResponse);
         return null;
+    }
+
+    private String determineErrorType(Throwable ex) {
+        if (ex instanceof EntityNotFoundException) return "EntityNotFound";
+        if (ex instanceof ValidationException) return "ValidationError";
+        if (ex instanceof MessageProcessingException) return "ProcessingError";
+        return "GeneralError";
     }
 }

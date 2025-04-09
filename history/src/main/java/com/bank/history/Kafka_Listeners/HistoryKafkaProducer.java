@@ -19,7 +19,6 @@ public class HistoryKafkaProducer {
         log.info("Отправка ответа в топик '{}': requestId={}, данные={}", auditHistoryResponseTopic, requestId, historyDto);
         try {
             kafkaTemplate.send(auditHistoryResponseTopic, requestId, historyDto);
-            log.info("Сообщение успешно отправлено: requestId={}", requestId);
         }catch (Exception e){
             log.error("Ошибка при отправке сообщения: requestId={}, данные={}", requestId, historyDto, e);
         }

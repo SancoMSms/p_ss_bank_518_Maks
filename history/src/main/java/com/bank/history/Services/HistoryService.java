@@ -6,5 +6,5 @@ import com.bank.history.Entities.History;
 public interface HistoryService {
     History save(History history);
     HistoryDto getHistoryById(String id);
-    void sendHistoryResponse(String requestId, HistoryDto historyDto);
+    void publishHistoryResponseToKafka (String requestId, HistoryDto historyDto);
 }

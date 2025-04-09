@@ -5,15 +5,16 @@ import com.bank.history.Entities.History;
 import com.bank.history.Kafka_Listeners.HistoryKafkaProducer;
 import com.bank.history.Mappers.HistoryMapper;
 import com.bank.history.Repositories.HistoryRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class HistoryServiceImpl implements HistoryService {
 
     private final HistoryRepository historyRepository;
@@ -22,46 +23,42 @@ public class HistoryServiceImpl implements HistoryService {
 
     @Override
     public History save(History history) {
-        log.info("Сохранение истории: {}", history);
         try {
-            historyRepository.save(history);
-            log.info("История успешно сохранена: id={}", history.getId());
-            return history;
+            return historyRepository.save(history);
         } catch (Exception e) {
-            log.error("Ошибка при сохранении истории: {}", history, e);
-            throw new RuntimeException("Ошибка при сохранении истории", e); //TODO прикидываем исключения выше
+            throw new RuntimeException("Не удалось сохранить историю", e);
         }
     }
 
     @Override
     public HistoryDto getHistoryById(String id) {
-        log.info("Поиск истории по requestId={}", id);
         try {
-            Optional<History> historyOptional = historyRepository.findById(Long.parseLong(id));
-            if (historyOptional.isPresent()) {
-                return historyMapper.toDto(historyOptional.get());
-            } else {
-                log.warn("История не найдена для requestId={}", id);
-                return null;
+            long parsedId;
+            try {
+                parsedId = Long.parseLong(id);
+            } catch (NumberFormatException e) {
+                throw new ValidationException("Некорректный формат id: " + id);
             }
-        } catch (NumberFormatException e) {
-            log.error("Некорректный формат requestId: {}", id, e);
-            throw new RuntimeException("Некорректный формат requestId: " + id, e);
+
+            Optional<History> historyOptional = historyRepository.findById(parsedId);
+            return historyOptional
+                    .map(historyMapper::toDto)
+                    .orElseThrow(() -> new EntityNotFoundException("История не найдена для id: " + id));
+
+        } catch (ValidationException | EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Ошибка при получении истории по requestId={}", id, e);
-            throw new RuntimeException("Ошибка при получении истории по requestId: " + id, e);
+            throw new RuntimeException("Ошибка при получении истории по id: " + id, e);
         }
     }
 
     @Override
-    public void sendHistoryResponse(String requestId, HistoryDto historyDto) {
-        log.info("Отправка истории в Kafka: requestId={}, данные={}", requestId, historyDto);
+    @Async
+    public void publishHistoryResponseToKafka(String id, HistoryDto historyDto) {
         try {
-            historyKafkaProducer.sendHistoryResponse(requestId, historyDto);
-            log.info("История успешно отправлена: requestId={}", requestId);
+            historyKafkaProducer.sendHistoryResponse(id, historyDto);
         } catch (Exception e) {
-            log.error("Ошибка при отправке истории в Kafka: requestId={}, данные={}", requestId, historyDto, e);
-            throw new RuntimeException();
+            throw new RuntimeException("Ошибка при отправке истории в Kafka: id: " + id, e);
         }
     }
 }
