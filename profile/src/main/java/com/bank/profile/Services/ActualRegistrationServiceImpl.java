@@ -10,25 +10,29 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Transactional
 @Service
+@Getter
+@Setter
 public class ActualRegistrationServiceImpl implements ActualRegistrationService {
     private static final Logger logger = LoggerFactory.getLogger(ActualRegistrationServiceImpl.class);
 
     private final ActualRegistrationRepository actualRegistrationRepository;
     private final ActualRegistrationMapper actualRegistrationMapper;
     private final KafkaErrorProducer kafkaErrorProducer;
+    private final MeterRegistry meterRegistry;
 
-    private final Counter createCounter;
-    private final Counter updateCounter;
-    private final Counter deleteCounter;
-    private final Counter errorCounter;
+    private Counter createCounter;
+    private Counter updateCounter;
+    private Counter deleteCounter;
+    private Counter errorCounter;
 
     public ActualRegistrationServiceImpl(ActualRegistrationRepository actualRegistrationRepository,
                                          ActualRegistrationMapper actualRegistrationMapper,
@@ -37,6 +41,8 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
         this.actualRegistrationRepository = actualRegistrationRepository;
         this.actualRegistrationMapper = actualRegistrationMapper;
         this.kafkaErrorProducer = kafkaErrorProducer;
+        this.meterRegistry = meterRegistry;
+
 
         this.createCounter = meterRegistry.counter("actualRegistration.create.count");
         this.updateCounter = meterRegistry.counter("actualRegistration.update.count");
@@ -45,6 +51,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
+    @Transactional
     public ActualRegistration create(@Valid @NotNull ActualRegistrationDto actualRegistrationDto) {
         logger.info("Creating actual registration: {}", actualRegistrationDto);
         createCounter.increment();
@@ -57,6 +64,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
+    @Transactional
     public ActualRegistration update(@Valid @NotNull ActualRegistrationDto actualRegistrationDto) {
         logger.info("Updating actual registration: {}", actualRegistrationDto);
         updateCounter.increment();
@@ -69,6 +77,7 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
     }
 
     @Override
+    @Transactional
     public void delete(@NotNull Long id) {
         logger.info("Deleting actual registration by ID: {}", id);
         deleteCounter.increment();

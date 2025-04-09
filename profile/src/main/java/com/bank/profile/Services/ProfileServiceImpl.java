@@ -10,25 +10,29 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Transactional
 @Service
+@Getter
+@Setter
 public class ProfileServiceImpl implements ProfileService {
     private static final Logger logger = LoggerFactory.getLogger(ProfileServiceImpl.class);
 
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
     private final KafkaErrorProducer kafkaErrorProducer;
+    private final MeterRegistry meterRegistry;
 
-    private final Counter createCounter;
-    private final Counter updateCounter;
-    private final Counter deleteCounter;
-    private final Counter errorCounter;
+    private Counter createCounter;
+    private Counter updateCounter;
+    private Counter deleteCounter;
+    private Counter errorCounter;
 
     public ProfileServiceImpl(ProfileRepository profileRepository,
                               ProfileMapper profileMapper,
@@ -37,6 +41,7 @@ public class ProfileServiceImpl implements ProfileService {
         this.profileRepository = profileRepository;
         this.profileMapper = profileMapper;
         this.kafkaErrorProducer = kafkaErrorProducer;
+        this.meterRegistry = meterRegistry;
 
         this.createCounter = meterRegistry.counter("profile.create.count");
         this.updateCounter = meterRegistry.counter("profile.update.count");
@@ -45,6 +50,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional
     public Profile create(@Valid ProfileDto profileDto) {
         logger.info("Creating profile: {}", profileDto);
         createCounter.increment();
@@ -57,6 +63,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional
     public Profile update(@Valid ProfileDto profileDto) {
         logger.info("Updating profile: {}", profileDto);
         updateCounter.increment();
@@ -69,6 +76,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional
     public void delete(@NotNull Long id) {
         logger.info("Deleting profile by ID: {}", id);
         deleteCounter.increment();

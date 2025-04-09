@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -27,8 +29,11 @@ public class AuditAspect {
 
     @AfterReturning(value = "execution(* com.bank.profile.Services.ProfileServiceImpl.update(..))", returning = "updatedProfile")
     public void logProfileUpdate(JoinPoint joinPoint, Profile updatedProfile) {
-        Profile oldProfile = (Profile) joinPoint.getArgs()[0];
-        logAudit(AuditEntityType.PROFILE, AuditOperationType.UPDATE, updatedProfile, oldProfile);
+        Object[] args = joinPoint.getArgs();
+        if (args.length > 0 && args[0] instanceof Profile) {
+            Profile oldProfile = (Profile) args[0];
+            logAudit(AuditEntityType.PROFILE, AuditOperationType.UPDATE, updatedProfile, oldProfile);
+        }
     }
 
     private void logAudit(AuditEntityType entityType, AuditOperationType operationType, Object newEntity, Object oldEntity) {
@@ -55,6 +60,7 @@ public class AuditAspect {
     }
 
     private String getCurrentUsername() {
-        return "SYSTEM";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.isAuthenticated()) ? auth.getName() : "UNKNOWN";
     }
 }

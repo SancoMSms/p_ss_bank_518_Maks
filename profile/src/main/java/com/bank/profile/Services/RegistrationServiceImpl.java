@@ -9,25 +9,30 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Transactional
 @Service
+@Getter
+@Setter
 public class RegistrationServiceImpl implements RegistrationService {
     private static final Logger logger = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
     private final RegistrationRepository registrationRepository;
     private final RegistrationMappers registrationMappers;
     private final KafkaErrorProducer kafkaErrorProducer;
+    private final MeterRegistry meterRegistry;
 
-    private final Counter createCounter;
-    private final Counter updateCounter;
-    private final Counter deleteCounter;
-    private final Counter errorCounter;
+    private Counter createCounter;
+    private Counter updateCounter;
+    private Counter deleteCounter;
+    private Counter errorCounter;
 
     public RegistrationServiceImpl(RegistrationRepository registrationRepository,
                                    RegistrationMappers registrationMappers,
@@ -36,6 +41,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         this.registrationRepository = registrationRepository;
         this.registrationMappers = registrationMappers;
         this.kafkaErrorProducer = kafkaErrorProducer;
+        this.meterRegistry = meterRegistry;
 
         this.createCounter = meterRegistry.counter("registration.create.count");
         this.updateCounter = meterRegistry.counter("registration.update.count");
@@ -44,6 +50,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
+    @Transactional
     public Registration create(@Valid RegistrationDto registrationDto) {
         logger.info("Creating registration: {}", registrationDto);
         createCounter.increment();
@@ -56,6 +63,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
+    @Transactional
     public Registration update(@Valid RegistrationDto registrationDto) {
         logger.info("Updating registration: {}", registrationDto);
         updateCounter.increment();
@@ -68,7 +76,8 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public void delete(Long id) {
+    @Transactional
+    public void delete(@NotNull Long id) {
         logger.info("Deleting registration by ID: {}", id);
         deleteCounter.increment();
         try {
@@ -80,7 +89,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public Registration getRegistration(Long id) {
+    public Registration getRegistration(@NotNull Long id) {
         logger.info("Fetching registration by ID: {}", id);
         try {
             return registrationRepository.getById(id);

@@ -7,8 +7,11 @@ import com.bank.profile.Mappers.AccountDetailsMapper;
 import com.bank.profile.Repositories.AccountDetailsRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,17 +19,20 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Getter
+@Setter
 public class AccountDetailsServiceImpl implements AccountDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(AccountDetailsServiceImpl.class);
 
     private final AccountDetailsRepository accountDetailsRepository;
     private final AccountDetailsMapper accountDetailsMapper;
     private final KafkaErrorProducer kafkaErrorProducer;
+    private final MeterRegistry meterRegistry;
 
-    private final Counter createCounter;
-    private final Counter updateCounter;
-    private final Counter deleteCounter;
-    private final Counter errorCounter;
+    private Counter createCounter;
+    private Counter updateCounter;
+    private Counter deleteCounter;
+    private Counter errorCounter;
 
     public AccountDetailsServiceImpl(AccountDetailsRepository accountDetailsRepository,
                                      AccountDetailsMapper accountDetailsMapper,
@@ -35,6 +41,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
         this.accountDetailsRepository = accountDetailsRepository;
         this.accountDetailsMapper = accountDetailsMapper;
         this.kafkaErrorProducer = kafkaErrorProducer;
+        this.meterRegistry = meterRegistry;
 
         this.createCounter = meterRegistry.counter("accountDetails.create.count");
         this.updateCounter = meterRegistry.counter("accountDetails.update.count");
@@ -43,6 +50,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
+    @Transactional
     public AccountDetails create(@Valid @NotNull AccountDetailsDto accountDetailsDto) {
         logger.info("Creating account details: {}", accountDetailsDto);
         createCounter.increment();
@@ -55,6 +63,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
+    @Transactional
     public AccountDetails update(@Valid @NotNull AccountDetailsDto accountDetailsDto) {
         logger.info("Updating account details: {}", accountDetailsDto);
         updateCounter.increment();
@@ -67,6 +76,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
+    @Transactional
     public void delete(@NotNull Long id) {
         logger.info("Deleting account details by ID: {}", id);
         deleteCounter.increment();
