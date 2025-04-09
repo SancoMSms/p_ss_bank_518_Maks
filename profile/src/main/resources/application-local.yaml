@@ -24,3 +24,22 @@ spring:
     drop-first: false
   application:
     name: profile-app
+
+  kafka:
+    topics:
+      profile-create: profile.create
+      profile-update: profile.update
+      profile-delete: profile.delete
+      profile-get: profile.get
+
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: profile-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
