@@ -24,3 +24,24 @@ spring:
     drop-first: false
   application:
     name: history-app
+
+  kafka:
+    topics:
+      audit-history: audit.history
+      audit-history-request: audit.history.request
+      audit-history-response: audit.history.response
+      audit-history-errors: audit-history-errors
+
+
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: history-group
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      properties:
+        spring.json.trusted.packages: "*"
+  jpa:
+    hibernate:
+      ddl-auto: update
