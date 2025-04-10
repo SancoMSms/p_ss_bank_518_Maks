@@ -27,14 +27,13 @@ public class KafkaConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(ProducerConfig.ACKS_CONFIG, "all"); // Подтверждение доставки
-        props.put(ProducerConfig.RETRIES_CONFIG, 3); // Количество повторных попыток
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // Чтение с начала при отсутствии смещения
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100); // Ограничение количества записей за один запрос
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
         return props;
     }
 
-    // Бин для KafkaTemplate<Long, String>
     @Bean(name = "longStringKafkaTemplate")
     public KafkaTemplate<Long, String> longStringKafkaTemplate() {
         return new KafkaTemplate<>(longStringProducerFactory());
@@ -49,7 +48,6 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
-    // Бин для KafkaTemplate<String, Object>
     @Bean(name = "stringObjectKafkaTemplate")
     public KafkaTemplate<String, Object> stringObjectKafkaTemplate() {
         return new KafkaTemplate<>(stringObjectProducerFactory());
@@ -60,19 +58,9 @@ public class KafkaConfig {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class); // Для объектов
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(configProps);
     }
-
-//    @Bean
-//    public ProducerFactory<Long, String> producerFactory() {
-//        return new DefaultKafkaProducerFactory<>(producerConfigs());
-//    }
-//
-//    @Bean
-//    public KafkaTemplate<Long, String> kafkaTemplate() {
-//        return new KafkaTemplate<>(producerFactory());
-//    }
 
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {

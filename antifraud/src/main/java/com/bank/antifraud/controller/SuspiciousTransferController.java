@@ -23,17 +23,15 @@ public class SuspiciousTransferController {
     }
 
     // Обновление подозрительного перевода
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Void> updateTransfer(@PathVariable Long id,
-                                               @RequestBody TransferAntiFraudDto kafkaDto) {
+    @PutMapping("/update")
+    public ResponseEntity<Void> updateTransfer(@RequestBody TransferAntiFraudDto kafkaDto) {
         suspiciousTransferService.updateSuspiciousTransfer(kafkaDto);
         return ResponseEntity.ok().build();
     }
 
     // Удаление подозрительного перевода
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteTransfer(@PathVariable Long id,
-                                               @RequestBody TransferAntiFraudDto kafkaDto) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteTransfer(@RequestBody TransferAntiFraudDto kafkaDto) {
         suspiciousTransferService.deleteSuspiciousTransfer(kafkaDto);
         return ResponseEntity.noContent().build();
     }

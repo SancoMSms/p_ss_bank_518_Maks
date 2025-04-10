@@ -25,9 +25,10 @@ public abstract class SuspiciousTransfer {
     private String suspicious_reason;
 
     public abstract Long getTransferId();
+
     public abstract void setTransferId(Long transferId);
 
-    @PrePersist
+    //@PrePersist
     public void syncIdWithTransferId() {
         this.id = getTransferId();
     }

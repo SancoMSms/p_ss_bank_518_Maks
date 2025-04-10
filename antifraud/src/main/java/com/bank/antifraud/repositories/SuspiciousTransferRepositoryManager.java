@@ -14,11 +14,11 @@ public class SuspiciousTransferRepositoryManager {
     private final SuspiciousPhoneTransferRepository phoneRepo;
     private final SuspiciousAccountTransferRepository accountRepo;
 
-    public JpaRepository<? extends SuspiciousTransfer, Long> getRepository(String entityType) {
+    public <T extends SuspiciousTransfer> JpaRepository<T, Long> getRepository(String entityType) {
         return switch (entityType.toUpperCase()) {
-            case "CARD" -> cardRepo;
-            case "PHONE" -> phoneRepo;
-            case "ACCOUNT" -> accountRepo;
+            case "CARD" -> (JpaRepository<T, Long>) cardRepo;
+            case "PHONE" -> (JpaRepository<T, Long>) phoneRepo;
+            case "ACCOUNT" -> (JpaRepository<T, Long>) accountRepo;
             default -> throw new ValidationException("Unsupported transfer type: " + entityType);
         };
     }

@@ -49,14 +49,14 @@ public class AuditServiceImpl implements AuditService {
     public void logAudit(SuspiciousTransferDto suspiciousTransferDto,
                          String operation_type) {
 
+        if (!"CREATE".equals(operation_type.toUpperCase()) && !"UPDATE".equals(operation_type.toUpperCase())) {
+            throw new IllegalArgumentException("Invalid operation type: " + operation_type);
+        }
         AuditDto auditDto = new AuditDto();
         auditDto.setOperation_type(operation_type);
         auditDto.setTransfer_id(suspiciousTransferDto.getTransferId());
-
-        if (!"CREATE".equals(operation_type) && !"UPDATE".equals(operation_type)) {
-            throw new IllegalArgumentException("Invalid operation type: " + operation_type);
-        }
         auditDto.setEntity_type(suspiciousTransferDto.getEntityType());
+
         if ("CREATE".equals(operation_type)) {
             auditDto.setCreated_by("SYSTEM"); //TODO брать из пришедшего с кафки аудита
             auditDto.setCreated_at(Timestamp.valueOf(LocalDateTime.now())); //TODO брать из пришедшего с кафки аудита
@@ -66,12 +66,11 @@ public class AuditServiceImpl implements AuditService {
                 logger.error("Error while serializing object to JSON: {}", e.getMessage());
                 throw new RuntimeException("Failed to serialize object to JSON", e);
             }
+
         } else if ("UPDATE".equals(operation_type)) {
-
-            List<Audit> previousAudits = auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(), suspiciousTransferDto.getTransferId());
+            List<Audit> previousAudits =
+                    auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(), suspiciousTransferDto.getTransferId());
             Audit oldAuditDto = previousAudits.isEmpty() ? null : previousAudits.get(0);
-
-            //AuditDto oldAuditDto = getDtoById(suspiciousTransferDto.getTransferId());
             auditDto.setEntity_type(oldAuditDto.getEntity_type());
             auditDto.setCreated_by(oldAuditDto.getCreated_by());
             auditDto.setCreated_at(oldAuditDto.getCreated_at());
