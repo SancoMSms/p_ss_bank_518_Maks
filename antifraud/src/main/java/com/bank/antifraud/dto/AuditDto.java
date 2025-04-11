@@ -1,29 +1,38 @@
 package com.bank.antifraud.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-
 import java.sql.Timestamp;
 
 @Data
 public class AuditDto {
 
+    private static final int MAX_SIZE = 40;
+
     private Long id;
 
-    private String entity_type;
+    @NotNull
+    @Size(max = MAX_SIZE)
+    private String entityType;
 
-    private String operation_type;
+    @NotNull
+    private String operationType;
 
-    private String created_by;
+    @NotNull
+    private String createdBy;
 
-    private String modified_by;
+    private String modifiedBy;
 
-    private Timestamp created_at;
+    @NotNull
+    private Timestamp createdAt;
 
-    private Timestamp modified_at;
+    private Timestamp modifiedAt;
 
-    private String new_entity_json;
+    private String newEntityJson;
 
-    private String entity_json;
+    @NotNull
+    private String entityJson;
 
-    private Long transfer_id;
+    private Long transferId;
 }

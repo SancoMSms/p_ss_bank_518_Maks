@@ -1,12 +1,11 @@
 package com.bank.antifraud.services;
 
 import com.bank.antifraud.dto.AuditDto;
-import com.bank.antifraud.dto.SuspiciousTransferDto;
+import com.bank.antifraud.dto.AbstractSuspiciousTransferDto;
 import com.bank.antifraud.entities.Audit;
 import com.bank.antifraud.mappers.AuditMapper;
 import com.bank.antifraud.repositories.AuditRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,71 +21,66 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuditServiceImpl.class);
+    private static final String CREATE = "CREATE";
+    private static final String UPDATE = "UPDATE";
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuditServiceImpl.class);
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
     private final ObjectMapper objectMapper;
+
 
     @Override
     public AuditDto getDtoById(Long id) {
         return auditMapper.toDto(auditRepository.getById(id));
     }
 
-    private Long extractTransferId(String entityJson) {
-        try {
-            JsonNode jsonNode = objectMapper.readTree(entityJson);
-            JsonNode transferIdNode = jsonNode.get("id");
-            return transferIdNode != null && !transferIdNode.isNull()
-                    ? transferIdNode.asLong()
-                    : null;
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot parse entity_json to extract transferId", e);
-        }
-    }
-
     @Override
     @Transactional
-    public void logAudit(SuspiciousTransferDto suspiciousTransferDto,
-                         String operation_type) {
-
-        if (!"CREATE".equals(operation_type.toUpperCase()) && !"UPDATE".equals(operation_type.toUpperCase())) {
-            throw new IllegalArgumentException("Invalid operation type: " + operation_type);
+    public void logAudit(AbstractSuspiciousTransferDto suspiciousTransferDto,
+                         String operationType) {
+        if (!CREATE.equals(operationType.toUpperCase()) &&
+                !UPDATE.equals(operationType.toUpperCase())) {
+            throw new IllegalArgumentException("Invalid operation type: " + operationType);
         }
-        AuditDto auditDto = new AuditDto();
-        auditDto.setOperation_type(operation_type);
-        auditDto.setTransfer_id(suspiciousTransferDto.getTransferId());
-        auditDto.setEntity_type(suspiciousTransferDto.getEntityType());
-
-        if ("CREATE".equals(operation_type)) {
-            auditDto.setCreated_by("SYSTEM"); //TODO брать из пришедшего с кафки аудита
-            auditDto.setCreated_at(Timestamp.valueOf(LocalDateTime.now())); //TODO брать из пришедшего с кафки аудита
-            try {
-                auditDto.setEntity_json(objectMapper.writeValueAsString(suspiciousTransferDto));
-            } catch (JsonProcessingException e) {
-                logger.error("Error while serializing object to JSON: {}", e.getMessage());
-                throw new RuntimeException("Failed to serialize object to JSON", e);
-            }
-
-        } else if ("UPDATE".equals(operation_type)) {
-            List<Audit> previousAudits =
-                    auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(), suspiciousTransferDto.getTransferId());
-            Audit oldAuditDto = previousAudits.isEmpty() ? null : previousAudits.get(0);
-            auditDto.setEntity_type(oldAuditDto.getEntity_type());
-            auditDto.setCreated_by(oldAuditDto.getCreated_by());
-            auditDto.setCreated_at(oldAuditDto.getCreated_at());
-            auditDto.setEntity_json(oldAuditDto.getEntity_json());
-            auditDto.setModified_at(Timestamp.valueOf(LocalDateTime.now()));
-            auditDto.setModified_by("anti_fraud");
-            try {
-                auditDto.setNew_entity_json(objectMapper.writeValueAsString(suspiciousTransferDto));
-            } catch (JsonProcessingException e) {
-                logger.error("Error while serializing object to JSON: {}", e.getMessage());
-                throw new RuntimeException("Failed to serialize object to JSON", e);
-            }
+        final AuditDto auditDto = new AuditDto();
+        auditDto.setOperationType(operationType);
+        auditDto.setTransferId(suspiciousTransferDto.getTransferId());
+        auditDto.setEntityType(suspiciousTransferDto.getEntityType());
+        if (CREATE.equals(operationType)) {
+            auditDto.setCreatedBy("SYSTEM"); //TODO брать из пришедшего с кафки аудита
+            auditDto.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); //TODO брать из пришедшего с кафки аудита
+            setJson(auditDto, CREATE, suspiciousTransferDto);
+        } else if (UPDATE.equals(operationType)) {
+            final List<Audit> previousAudits =
+                    auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(),
+                            suspiciousTransferDto.getTransferId());
+            final Audit oldAuditDto = previousAudits.isEmpty() ? null : previousAudits.get(0);
+            auditDto.setEntityType(oldAuditDto.getEntityType());
+            auditDto.setCreatedBy(oldAuditDto.getCreatedBy());
+            auditDto.setCreatedAt(oldAuditDto.getCreatedAt());
+            auditDto.setEntityJson(oldAuditDto.getEntityJson());
+            auditDto.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
+            auditDto.setModifiedBy("anti_fraud");
+            setJson(auditDto, UPDATE, suspiciousTransferDto);
         }
-        Audit audit = auditMapper.toEntity(auditDto);
+        final Audit audit = auditMapper.toEntity(auditDto);
         auditRepository.save(audit);
-        AuditDto auditDtoFromRep = auditMapper.toDto(auditRepository.getById(audit.getId()));
-        logger.info("Audit event saved successfully: {}", auditDtoFromRep);
+        final AuditDto auditDtoFromRep = auditMapper.toDto(auditRepository.getById(audit.getId()));
+        LOGGER.info("Audit event saved successfully: {}", auditDtoFromRep);
+    }
+
+    private void setJson(AuditDto auditDto,
+                         String operationType,
+                         AbstractSuspiciousTransferDto suspiciousTransferDto) {
+        try {
+            if (operationType.equals(CREATE)) {
+                auditDto.setEntityJson(objectMapper.writeValueAsString(suspiciousTransferDto));
+            } else if (operationType.equals(UPDATE)) {
+                auditDto.setEntityJson(objectMapper.writeValueAsString(suspiciousTransferDto));
+            }
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Error while serializing object to JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to serialize object to JSON", e);
+        }
     }
 }

@@ -5,13 +5,13 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SuspiciousCardTransferDto extends SuspiciousTransferDto {
+public class SuspiciousCardTransferDto extends AbstractSuspiciousTransferDto {
 
-    public void setCard_transfer_id(Long card_transfer_id) {
-        this.setTransferId(card_transfer_id);
+    public void setCardTransferId(Long cardTransferId) {
+        this.setTransferId(cardTransferId);
     }
 
-    public Long getCard_transfer_id() {
+    public Long getCardTransferId() {
         return this.getTransferId();
     }
 

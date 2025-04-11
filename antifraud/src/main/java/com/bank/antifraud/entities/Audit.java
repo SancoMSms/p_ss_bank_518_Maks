@@ -1,6 +1,10 @@
 package com.bank.antifraud.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.Data;
 import java.sql.Timestamp;
 
@@ -13,24 +17,19 @@ public class Audit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(40)")
-    private String entity_type;
+    private String entityType;
 
-    @Column(nullable = false)
-    private String operation_type;
+    private String operationType;
 
-    @Column(nullable = false)
-    private String created_by;
+    private String createdBy;
 
-    private String modified_by;
+    private String modifiedBy;
 
-    @Column(nullable = false)
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
-    private Timestamp modified_at;
+    private Timestamp modifiedAt;
 
-    private String new_entity_json;
+    private String newEntityJson;
 
-    @Column(nullable = false)
-    private String entity_json;
+    private String entityJson;
 }

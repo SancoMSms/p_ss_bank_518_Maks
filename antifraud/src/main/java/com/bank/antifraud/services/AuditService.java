@@ -1,10 +1,10 @@
 package com.bank.antifraud.services;
 
 import com.bank.antifraud.dto.AuditDto;
-import com.bank.antifraud.dto.SuspiciousTransferDto;
+import com.bank.antifraud.dto.AbstractSuspiciousTransferDto;
 
 public interface AuditService {
 
-    void logAudit(SuspiciousTransferDto suspiciousTransferDto, String operation_type);
+    void logAudit(AbstractSuspiciousTransferDto suspiciousTransferDto, String operationType);
     AuditDto getDtoById(Long id);
 }

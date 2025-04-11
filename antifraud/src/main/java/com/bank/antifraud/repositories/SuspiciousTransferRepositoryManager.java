@@ -1,6 +1,6 @@
 package com.bank.antifraud.repositories;
 
-import com.bank.antifraud.entities.SuspiciousTransfer;
+import com.bank.antifraud.entities.AbstractSuspiciousTransfer;
 import com.bank.antifraud.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +14,7 @@ public class SuspiciousTransferRepositoryManager {
     private final SuspiciousPhoneTransferRepository phoneRepo;
     private final SuspiciousAccountTransferRepository accountRepo;
 
-    public <T extends SuspiciousTransfer> JpaRepository<T, Long> getRepository(String entityType) {
+    public <T extends AbstractSuspiciousTransfer> JpaRepository<T, Long> getRepository(String entityType) {
         return switch (entityType.toUpperCase()) {
             case "CARD" -> (JpaRepository<T, Long>) cardRepo;
             case "PHONE" -> (JpaRepository<T, Long>) phoneRepo;

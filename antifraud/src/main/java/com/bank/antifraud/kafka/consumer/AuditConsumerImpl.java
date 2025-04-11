@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuditConsumerImpl implements AuditConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuditConsumerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuditConsumerImpl.class);
 
     private final AuditService auditService;
 
     @Override
     @KafkaListener(topics = "audit-events", groupId = "antifraud-audit-group")
     public void handleAuditEvent(AuditDto auditDto) {
-        logger.info("Received audit event: {}", auditDto);
+        LOGGER.info("Received audit event: {}", auditDto);
         //auditService.logAudit();//TODO
-        logger.info("Processed audit event successfully");
+        LOGGER.info("Processed audit event successfully");
     }
 }

@@ -1,7 +1,13 @@
 package com.bank.antifraud.mappers;
 
-import com.bank.antifraud.dto.*;
-import com.bank.antifraud.entities.*;
+import com.bank.antifraud.dto.SuspiciousCardTransferDto;
+import com.bank.antifraud.dto.SuspiciousPhoneTransferDto;
+import com.bank.antifraud.dto.SuspiciousAccountTransferDto;
+import com.bank.antifraud.dto.AbstractSuspiciousTransferDto;
+import com.bank.antifraud.entities.SuspiciousCardTransfer;
+import com.bank.antifraud.entities.SuspiciousAccountTransfer;
+import com.bank.antifraud.entities.SuspiciousPhoneTransfer;
+import com.bank.antifraud.entities.AbstractSuspiciousTransfer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
@@ -13,17 +19,17 @@ public interface SuspiciousTransferMapper {
     @SubclassMapping(source = SuspiciousPhoneTransferDto.class, target = SuspiciousPhoneTransfer.class)
     @SubclassMapping(source = SuspiciousAccountTransferDto.class, target = SuspiciousAccountTransfer.class)
     @SubclassMapping(source = SuspiciousCardTransferDto.class, target = SuspiciousCardTransfer.class)
-    SuspiciousTransfer toEntity(SuspiciousTransferDto dto);
+    AbstractSuspiciousTransfer toEntity(AbstractSuspiciousTransferDto dto);
 
     // Маппинг Entity -> DTO
     @SubclassMapping(source = SuspiciousPhoneTransfer.class, target = SuspiciousPhoneTransferDto.class)
     @SubclassMapping(source = SuspiciousAccountTransfer.class, target = SuspiciousAccountTransferDto.class)
     @SubclassMapping(source = SuspiciousCardTransfer.class, target = SuspiciousCardTransferDto.class)
-    SuspiciousTransferDto toDto(SuspiciousTransfer entity);
+    AbstractSuspiciousTransferDto toDto(AbstractSuspiciousTransfer entity);
 
     // Фабричные методы для создания экземпляров конкретных подклассов
     @ObjectFactory
-    default SuspiciousTransfer createEntity(SuspiciousTransferDto dto) {
+    default AbstractSuspiciousTransfer createEntity(AbstractSuspiciousTransferDto dto) {
         if (dto instanceof SuspiciousPhoneTransferDto) {
             return new SuspiciousPhoneTransfer();
         } else if (dto instanceof SuspiciousAccountTransferDto) {
@@ -36,7 +42,7 @@ public interface SuspiciousTransferMapper {
     }
 
     @ObjectFactory
-    default SuspiciousTransferDto createDto(SuspiciousTransfer entity) {
+    default AbstractSuspiciousTransferDto createDto(AbstractSuspiciousTransfer entity) {
         if (entity instanceof SuspiciousPhoneTransfer) {
             return new SuspiciousPhoneTransferDto();
         } else if (entity instanceof SuspiciousAccountTransfer) {
@@ -48,21 +54,21 @@ public interface SuspiciousTransferMapper {
         }
     }
 
-    @Mapping(target = "phone_transfer_id", source = "transferId")
+    @Mapping(target = "phoneTransferId", source = "transferId")
     SuspiciousPhoneTransfer phoneDtoToEntity(SuspiciousPhoneTransferDto dto);
 
-    @Mapping(target = "transferId", source = "phone_transfer_id")
+    @Mapping(target = "transferId", source = "phoneTransferId")
     SuspiciousPhoneTransferDto phoneEntityToDto(SuspiciousPhoneTransfer entity);
 
-    @Mapping(target = "account_transfer_id", source = "transferId")
+    @Mapping(target = "accountTransferId", source = "transferId")
     SuspiciousAccountTransfer accountDtoToEntity(SuspiciousAccountTransferDto dto);
 
-    @Mapping(target = "transferId", source = "account_transfer_id")
+    @Mapping(target = "transferId", source = "accountTransferId")
     SuspiciousAccountTransferDto accountEntityToDto(SuspiciousAccountTransfer entity);
 
-    @Mapping(target = "card_transfer_id", source = "transferId")
+    @Mapping(target = "cardTransferId", source = "transferId")
     SuspiciousCardTransfer cardDtoToEntity(SuspiciousCardTransferDto dto);
 
-    @Mapping(target = "transferId", source = "card_transfer_id")
+    @Mapping(target = "transferId", source = "cardTransferId")
     SuspiciousCardTransferDto cardEntityToDto(SuspiciousCardTransfer entity);
 }

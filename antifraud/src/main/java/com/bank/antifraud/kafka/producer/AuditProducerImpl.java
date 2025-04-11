@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 @RequiredArgsConstructor
 public class AuditProducerImpl implements AuditProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuditProducerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuditProducerImpl.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
     public void sendAuditEvent(AuditDto auditDto) {
-        logger.info("Sending audit event: {}", auditDto);
+        LOGGER.info("Sending audit event: {}", auditDto);
         kafkaTemplate.send("audit-events", auditDto);
-        logger.info("Audit event sent successfully");
+        LOGGER.info("Audit event sent successfully");
     }
 }

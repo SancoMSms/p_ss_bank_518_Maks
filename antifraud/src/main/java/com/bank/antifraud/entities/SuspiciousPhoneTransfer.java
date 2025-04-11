@@ -1,6 +1,8 @@
 package com.bank.antifraud.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,18 +10,17 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @Table(name = "suspicious_phone_transfers")
-public class SuspiciousPhoneTransfer extends SuspiciousTransfer {
+public class SuspiciousPhoneTransfer extends AbstractSuspiciousTransfer {
 
-    @Column(nullable = false, unique = true)
-    private Long phone_transfer_id;
+    private Long phoneTransferId;
 
     @Override
     public Long getTransferId() {
-        return phone_transfer_id;
+        return phoneTransferId;
     }
 
     @Override
     public void setTransferId(Long transferId) {
-        this.phone_transfer_id = transferId;
+        this.phoneTransferId = transferId;
     }
 }

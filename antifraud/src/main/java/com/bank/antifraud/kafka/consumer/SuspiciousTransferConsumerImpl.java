@@ -13,56 +13,56 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SuspiciousTransferConsumerImpl implements SuspiciousTransferConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(SuspiciousTransferConsumerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuspiciousTransferConsumerImpl.class);
     private final SuspiciousTransferService suspiciousTransferService;
     private final EventTracker eventTracker;
 
     @Override
     @KafkaListener(topics = "suspicious-transfers.create", groupId = "antifraud-group")
     public void handleCreateEvent(TransferAntiFraudDto kafkaDto) {
-        Long transfer_id = kafkaDto.getTransferId();
-        if (transfer_id == null || eventTracker.isProcessed(transfer_id)) {
-            logger.info("Ignoring create event with id: {}", transfer_id);
+        final Long transferId = kafkaDto.getTransferId();
+        if (transferId == null || eventTracker.isProcessed(transferId)) {
+            LOGGER.info("Ignoring create event with id: {}", transferId);
             return;
         }
-        eventTracker.markAsProcessed(transfer_id);
-        logger.info("Received create event for suspicious transferDto: {}", kafkaDto);
+        eventTracker.markAsProcessed(transferId);
+        LOGGER.info("Received create event for suspicious transferDto: {}", kafkaDto);
         suspiciousTransferService.createSuspiciousTransfer(kafkaDto);
-        logger.info("Processed create event successfully");
+        LOGGER.info("Processed create event successfully");
     }
 
     @Override
     @KafkaListener(topics = "suspicious-transfers.update", groupId = "antifraud-group")
     public void handleUpdateEvent(TransferAntiFraudDto kafkaDto) {
-        Long transferId = kafkaDto.getTransferId();
+        final Long transferId = kafkaDto.getTransferId();
         if (transferId == null || eventTracker.isProcessed(transferId)) {
-            logger.info("Ignoring update event with id: {}", transferId);
+            LOGGER.info("Ignoring update event with id: {}", transferId);
             return;
         }
         eventTracker.markAsProcessed(transferId);
-        logger.info("Received update event for suspicious kafkaDto: {}", kafkaDto);
+        LOGGER.info("Received update event for suspicious kafkaDto: {}", kafkaDto);
         suspiciousTransferService.updateSuspiciousTransfer(kafkaDto);
-        logger.info("Processed update event successfully");
+        LOGGER.info("Processed update event successfully");
     }
 
     @Override
     @KafkaListener(topics = "suspicious-transfers.delete", groupId = "antifraud-group")
     public void handleDeleteEvent(TransferAntiFraudDto kafkaDto) {
-        Long transactionId = kafkaDto.getTransferId();
+        final Long transactionId = kafkaDto.getTransferId();
         if (transactionId == null || eventTracker.isProcessed(transactionId)) {
-            logger.info("Ignoring delete event with id: {}", transactionId);
+            LOGGER.info("Ignoring delete event with id: {}", transactionId);
             return;
         }
         eventTracker.markAsProcessed(transactionId);
-        logger.info("Received delete event for suspicious transfer with ID: {}", transactionId);
+        LOGGER.info("Received delete event for suspicious transfer with ID: {}", transactionId);
         suspiciousTransferService.deleteSuspiciousTransfer(kafkaDto);
-        logger.info("Processed delete event successfully");
+        LOGGER.info("Processed delete event successfully");
     }
 
     @Override
     @KafkaListener(topics = "suspicious-transfers.get", groupId = "antifraud-group")
     public void handleGetEvent(String request) {
-        logger.info("Received get event for suspicious transfers: {}", request);
-        logger.info("Processed get event successfully");
+        LOGGER.info("Received get event for suspicious transfers: {}", request);
+        LOGGER.info("Processed get event successfully");
     }
 }

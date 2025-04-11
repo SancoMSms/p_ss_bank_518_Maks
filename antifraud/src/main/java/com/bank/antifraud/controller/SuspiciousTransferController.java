@@ -3,7 +3,12 @@ package com.bank.antifraud.controller;
 import com.bank.antifraud.dto.TransferAntiFraudDto;
 import com.bank.antifraud.services.SuspiciousTransferService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @RequestMapping("/transfers")
@@ -19,7 +24,7 @@ public class SuspiciousTransferController {
     @PostMapping("/create")
     public ResponseEntity<Void> createTransfer(@RequestBody TransferAntiFraudDto kafkaDto) {
         suspiciousTransferService.createSuspiciousTransfer(kafkaDto);
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.ok().build();
     }
 
     // Обновление подозрительного перевода
@@ -33,6 +38,6 @@ public class SuspiciousTransferController {
     @DeleteMapping("/delete")
     public ResponseEntity<Void> deleteTransfer(@RequestBody TransferAntiFraudDto kafkaDto) {
         suspiciousTransferService.deleteSuspiciousTransfer(kafkaDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

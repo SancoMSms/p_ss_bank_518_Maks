@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SuspiciousTransferDtoFactory {
 
-    public SuspiciousTransferDto createSuspiciousTransferDto(String entityType) {
+    public AbstractSuspiciousTransferDto createSuspiciousTransferDto(String entityType) {
         if (entityType == null) {
             throw new ValidationException("entityType is null!! in createSuspiciousTransferDto");
         }

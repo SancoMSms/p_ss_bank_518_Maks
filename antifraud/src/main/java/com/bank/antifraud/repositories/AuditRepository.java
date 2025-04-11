@@ -12,7 +12,10 @@ import java.util.List;
 public interface AuditRepository extends JpaRepository<Audit, Long> {
     Audit getById(Long id);
 
-    @Query("SELECT a FROM Audit a WHERE a.entity_type = :entityType AND a.entity_json LIKE CONCAT('%\"transferId\":', :transferId, '%') ORDER BY a.created_at DESC")
-    List<Audit> findPreviousByTransferId(@Param("entityType") String entityType, @Param("transferId") Long transferId);
+    @Query("SELECT a FROM Audit a WHERE a.entityType = " +
+            ":entityType AND a.entityJson LIKE CONCAT('%\"transferId\":', :transferId, '%') " +
+            "ORDER BY a.createdAt DESC")
+    List<Audit> findPreviousByTransferId(@Param("entityType") String entityType,
+                                         @Param("transferId") Long transferId);
 
 }
