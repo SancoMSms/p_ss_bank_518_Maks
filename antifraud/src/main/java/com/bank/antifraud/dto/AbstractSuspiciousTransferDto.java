@@ -1,38 +1,41 @@
 package com.bank.antifraud.dto;
 
+import com.bank.antifraud.enums.TransferType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AccessLevel;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class AbstractSuspiciousTransferDto {
 
-    @Setter(AccessLevel.NONE)
     private Long id;
 
-    @NotNull
+    @NotNull(message = "field isBlocked cannot be null")
     private Boolean isBlocked;
 
-    @NotNull
+    @NotNull(message = "field isSuspicious cannot be null")
     private Boolean isSuspicious;
 
     private String blockedReason;
 
-    @NotNull
+    @NotNull(message = "field suspiciousReason cannot be null")
     private String suspiciousReason;
 
-    @NotNull
-
+    @NotNull(message = "field transferId cannot be null")
     private Long transferId;
 
     @Positive
     private BigDecimal amount;
 
-    public abstract String getEntityType();
+    public abstract TransferType getEntityType();
 
     public void setTransferId(Long inputId) {
         this.id = inputId;

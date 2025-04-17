@@ -1,11 +1,19 @@
 package com.bank.antifraud.dto;
 
+import com.bank.antifraud.enums.TransferType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.sql.Timestamp;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuditDto {
 
     private static final int MAX_SIZE = 40;
@@ -14,10 +22,12 @@ public class AuditDto {
 
     @NotNull
     @Size(max = MAX_SIZE)
-    private String entityType;
+    private TransferType entityType;
 
     @NotNull
     private String operationType;
+
+    private Long transferId;
 
     @NotNull
     private String createdBy;
@@ -34,5 +44,4 @@ public class AuditDto {
     @NotNull
     private String entityJson;
 
-    private Long transferId;
 }

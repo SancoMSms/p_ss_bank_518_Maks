@@ -3,24 +3,27 @@ package com.bank.antifraud.kafka.consumer;
 import com.bank.antifraud.dto.AuditDto;
 import com.bank.antifraud.services.AuditService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AuditConsumerImpl implements AuditConsumer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuditConsumerImpl.class);
 
     private final AuditService auditService;
 
     @Override
-    @KafkaListener(topics = "audit-events", groupId = "antifraud-audit-group")
+    @KafkaListener(
+            topics = "audit-events",
+            groupId = "antifraud-audit-group",
+            containerFactory = "auditKafkaListenerContainerFactory"
+    )
     public void handleAuditEvent(AuditDto auditDto) {
-        LOGGER.info("Received audit event: {}", auditDto);
+        log.info("Received audit event: {}", auditDto);
         //auditService.logAudit();//TODO
-        LOGGER.info("Processed audit event successfully");
+        log.info("Audit event persisted successfully for entity: {}, operation: {}",
+                auditDto.getEntityType(), auditDto.getOperationType());
     }
 }

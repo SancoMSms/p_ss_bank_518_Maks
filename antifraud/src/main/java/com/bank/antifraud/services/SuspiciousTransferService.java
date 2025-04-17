@@ -5,8 +5,4 @@ import com.bank.antifraud.dto.TransferAntiFraudDto;
 
 public interface SuspiciousTransferService {
     AbstractSuspiciousTransferDto createSuspiciousTransfer(TransferAntiFraudDto kafkaDto);
-
-    AbstractSuspiciousTransferDto updateSuspiciousTransfer(TransferAntiFraudDto kafkaDto);
-
-    void deleteSuspiciousTransfer(TransferAntiFraudDto kafkaDto);
 }

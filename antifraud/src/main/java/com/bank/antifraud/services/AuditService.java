@@ -5,6 +5,6 @@ import com.bank.antifraud.dto.AbstractSuspiciousTransferDto;
 
 public interface AuditService {
 
-    void logAudit(AbstractSuspiciousTransferDto suspiciousTransferDto, String operationType);
+    void logAudit(AbstractSuspiciousTransferDto suspiciousTransferDto);
     AuditDto getDtoById(Long id);
 }

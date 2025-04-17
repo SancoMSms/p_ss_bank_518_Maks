@@ -3,31 +3,29 @@ package com.bank.antifraud.services;
 import com.bank.antifraud.dto.AuditDto;
 import com.bank.antifraud.dto.AbstractSuspiciousTransferDto;
 import com.bank.antifraud.entities.Audit;
+import com.bank.antifraud.enums.OperationType;
+import com.bank.antifraud.kafka.producer.AuditProducer;
 import com.bank.antifraud.mappers.AuditMapper;
 import com.bank.antifraud.repositories.AuditRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuditServiceImpl implements AuditService {
 
-    private static final String CREATE = "CREATE";
-    private static final String UPDATE = "UPDATE";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuditServiceImpl.class);
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
     private final ObjectMapper objectMapper;
-
+    private final AuditProducer auditProducer;
 
     @Override
     public AuditDto getDtoById(Long id) {
@@ -36,50 +34,39 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     @Transactional
-    public void logAudit(AbstractSuspiciousTransferDto suspiciousTransferDto,
-                         String operationType) {
-        if (!CREATE.equals(operationType.toUpperCase()) &&
-                !UPDATE.equals(operationType.toUpperCase())) {
-            throw new IllegalArgumentException("Invalid operation type: " + operationType);
-        }
+    public void logAudit(@Valid AbstractSuspiciousTransferDto dto) {
+        final OperationType operationType = getOperationType(dto);
         final AuditDto auditDto = new AuditDto();
-        auditDto.setOperationType(operationType);
-        auditDto.setTransferId(suspiciousTransferDto.getTransferId());
-        auditDto.setEntityType(suspiciousTransferDto.getEntityType());
-        if (CREATE.equals(operationType)) {
-            auditDto.setCreatedBy("SYSTEM"); //TODO брать из пришедшего с кафки аудита
-            auditDto.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); //TODO брать из пришедшего с кафки аудита
-            setJson(auditDto, CREATE, suspiciousTransferDto);
-        } else if (UPDATE.equals(operationType)) {
-            final List<Audit> previousAudits =
-                    auditRepository.findPreviousByTransferId(suspiciousTransferDto.getEntityType(),
-                            suspiciousTransferDto.getTransferId());
-            final Audit oldAuditDto = previousAudits.isEmpty() ? null : previousAudits.get(0);
-            auditDto.setEntityType(oldAuditDto.getEntityType());
-            auditDto.setCreatedBy(oldAuditDto.getCreatedBy());
-            auditDto.setCreatedAt(oldAuditDto.getCreatedAt());
-            auditDto.setEntityJson(oldAuditDto.getEntityJson());
-            auditDto.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
-            auditDto.setModifiedBy("anti_fraud");
-            setJson(auditDto, UPDATE, suspiciousTransferDto);
+        auditDto.setEntityType(dto.getEntityType());
+        auditDto.setOperationType(operationType.name());
+        auditDto.setTransferId(dto.getTransferId());
+        auditDto.setCreatedBy("SYSTEM"); //TODO брать из пришедшего с кафки аудита
+        auditDto.setModifiedBy("antifraud");
+        auditDto.setCreatedAt(Timestamp.valueOf("2001-01-01 01:01:01")); //TODO брать из пришедшего с кафки аудита
+        auditDto.setModifiedAt(Timestamp.valueOf(LocalDateTime.now()));
+        setJson(auditDto, dto);
+        final Audit savedAudit = auditRepository.save(auditMapper.toEntity(auditDto));
+        final AuditDto auditDtoFromRep = auditMapper.toDto(savedAudit);
+        log.info("Audit event saved successfully: {}", auditDtoFromRep);
+        auditProducer.sendAuditEvent(auditDtoFromRep);
+        log.info("Audit event sent to Kafka");
+    }
+
+    private OperationType getOperationType(AbstractSuspiciousTransferDto dto) {
+        if (dto.getIsBlocked()) {
+            return OperationType.BLOCK;
+        } else {
+            return OperationType.APPROVE;
         }
-        final Audit audit = auditMapper.toEntity(auditDto);
-        auditRepository.save(audit);
-        final AuditDto auditDtoFromRep = auditMapper.toDto(auditRepository.getById(audit.getId()));
-        LOGGER.info("Audit event saved successfully: {}", auditDtoFromRep);
     }
 
     private void setJson(AuditDto auditDto,
-                         String operationType,
                          AbstractSuspiciousTransferDto suspiciousTransferDto) {
         try {
-            if (operationType.equals(CREATE)) {
-                auditDto.setEntityJson(objectMapper.writeValueAsString(suspiciousTransferDto));
-            } else if (operationType.equals(UPDATE)) {
-                auditDto.setEntityJson(objectMapper.writeValueAsString(suspiciousTransferDto));
-            }
+            auditDto.setEntityJson("TEMP"); //TODO брать из пришедшего с кафки аудита
+            auditDto.setNewEntityJson(objectMapper.writeValueAsString(suspiciousTransferDto));
         } catch (JsonProcessingException e) {
-            LOGGER.error("Error while serializing object to JSON: {}", e.getMessage());
+            log.error("Error while serializing object to JSON: {}", e.getMessage());
             throw new RuntimeException("Failed to serialize object to JSON", e);
         }
     }

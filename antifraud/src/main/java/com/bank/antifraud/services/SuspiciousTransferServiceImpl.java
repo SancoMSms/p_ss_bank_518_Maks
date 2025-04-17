@@ -8,20 +8,18 @@ import com.bank.antifraud.exception.ValidationException;
 import com.bank.antifraud.mappers.SuspiciousTransferMapper;
 import com.bank.antifraud.kafka.producer.SuspiciousTransferProducer;
 import com.bank.antifraud.repositories.SuspiciousTransferRepositoryManager;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SuspiciousTransferServiceImpl implements SuspiciousTransferService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SuspiciousTransferServiceImpl.class);
 
     private final SuspiciousTransferRepositoryManager repositoryManager;
     private final SuspiciousTransferDtoFactory suspiciousTransferDtoFactory;
@@ -29,58 +27,35 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
     private final SuspiciousTransferMapper mapper;
 
     @Override
-    public AbstractSuspiciousTransferDto createSuspiciousTransfer(TransferAntiFraudDto kafkaDto) {
-        validateInput(kafkaDto);
-        LOGGER.info("Creating suspicious transfer of type: {}", kafkaDto.getEntityType());
+    public AbstractSuspiciousTransferDto createSuspiciousTransfer(@Valid TransferAntiFraudDto kafkaDto) {
+        log.info("Creating suspicious transfer of type: {}", kafkaDto.getEntityType());
         final JpaRepository<AbstractSuspiciousTransfer, Long> repository =
                 repositoryManager.getRepository(kafkaDto.getEntityType());
-        if (repository.existsById(kafkaDto.getTransferId())) {
-            throw new ValidationException("Transfer with ID " +
-                    kafkaDto.getTransferId() + " already exists in DB");
+        validateExistsInDb(kafkaDto, repository);
+        final AbstractSuspiciousTransferDto dto = toSuspiciousTransferDto(kafkaDto);
+        if (dto.getIsBlocked()) {
+            blockTransfer(kafkaDto);
+        } else {
+            approveTransfer(dto, repository);
         }
-        final AbstractSuspiciousTransferDto transferDto = toSuspiciousTransferDto(kafkaDto);
-        final AbstractSuspiciousTransfer entity = mapper.toEntity(transferDto);
+        return dto;
+    }
+
+    private void approveTransfer(AbstractSuspiciousTransferDto dto,
+                                 JpaRepository<AbstractSuspiciousTransfer, Long> repository) {
+        final AbstractSuspiciousTransfer entity = mapper.toEntity(dto);
         entity.syncIdWithTransferId();
         final AbstractSuspiciousTransfer savedEntity = repository.save(entity);
         final AbstractSuspiciousTransferDto savedDto = mapper.toDto(savedEntity);
-        final TransferAntiFraudDto savedKafkaDto = toTransferAntiFraudDto(savedDto);
-        suspiciousTransferProducer.sendCreateEvent(savedKafkaDto);
-        LOGGER.info("Suspicious transfer created and sent to Kafka");
-        return savedDto;
+        savedDto.setAmount(dto.getAmount());
+        final TransferAntiFraudDto processedKafkaDto = toTransferAntiFraudDto(savedDto);
+        suspiciousTransferProducer.sendApprovedEvent(processedKafkaDto);
+        log.info("Transfer with ID: {} is approved", dto.getTransferId());
     }
 
-    @Override
-    @Transactional
-    public AbstractSuspiciousTransferDto updateSuspiciousTransfer(TransferAntiFraudDto kafkaDto) {
-        validateInput(kafkaDto);
-        final JpaRepository<AbstractSuspiciousTransfer, Long> repository =
-                repositoryManager.getRepository(kafkaDto.getEntityType());
-        validateExistsInDb(kafkaDto.getTransferId(), repository);
-        final AbstractSuspiciousTransferDto transferDto = toSuspiciousTransferDto(kafkaDto);
-        LOGGER.info("Updating suspicious transferDto: {}", transferDto);
-        final AbstractSuspiciousTransfer entity =
-                mapper.toEntity(transferDto);
-        entity.syncIdWithTransferId();
-        final AbstractSuspiciousTransfer savedEntity = repository.save(entity);
-        final AbstractSuspiciousTransferDto updatedTransferDto = mapper.toDto(savedEntity);
-        final TransferAntiFraudDto updatedKafkaDto =
-                toTransferAntiFraudDto(updatedTransferDto);
-        suspiciousTransferProducer.sendUpdateEvent(updatedKafkaDto);
-        LOGGER.info("Suspicious transfer updated and sent to Kafka");
-        return updatedTransferDto;
-    }
-
-    @Override
-    @Transactional
-    public void deleteSuspiciousTransfer(TransferAntiFraudDto kafkaDto) {
-        validateInput(kafkaDto);
-        final Long transferId = kafkaDto.getTransferId();
-        final JpaRepository<AbstractSuspiciousTransfer, Long> repository =
-                repositoryManager.getRepository(kafkaDto.getEntityType());
-        validateExistsInDb(transferId, repository);
-        repository.deleteById(transferId);
-        suspiciousTransferProducer.sendDeleteEvent(kafkaDto);
-        LOGGER.info("Suspicious transfer deleted and sent to Kafka");
+    private void blockTransfer(TransferAntiFraudDto kafkaDto) {
+        suspiciousTransferProducer.sendBlockedEvent(kafkaDto);
+        log.info("Transfer with ID: {} is blocked", kafkaDto.getTransferId());
     }
 
     private AbstractSuspiciousTransferDto toSuspiciousTransferDto(TransferAntiFraudDto dto) {
@@ -112,26 +87,11 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
         return kafkaDto;
     }
 
-    private void validateInput(TransferAntiFraudDto kafkaDto) {
-        if (kafkaDto == null) {
-            throw new ValidationException("Kafka DTO cannot be null");
-        }
-        if (kafkaDto.getEntityType() == null || kafkaDto.getEntityType().isEmpty()) {
-            throw new ValidationException("Entity type in Kafka DTO cannot be null or empty");
-        }
-        if (kafkaDto.getTransferId() == null) {
-            throw new ValidationException("Transfer ID in Kafka DTO cannot be null");
-        }
-        if (kafkaDto.getAmount() == null) {
-            throw new ValidationException("Amount in Kafka DTO cannot be null");
-        }
-    }
-
-    private void validateExistsInDb(Long transferId,
-                                    JpaRepository<AbstractSuspiciousTransfer, Long> repository) {
-        if (!repository.existsById(transferId)) {
-            throw new ValidationException("Suspicious transfer with ID " +
-                    transferId + " does not exist");
+    private void validateExistsInDb(TransferAntiFraudDto kafkaDto,
+                                     JpaRepository<AbstractSuspiciousTransfer, Long> repository) {
+        if (repository.existsById(kafkaDto.getTransferId())) {
+            throw new ValidationException("Transfer with ID " +
+                    kafkaDto.getTransferId() + " already exists in DB");
         }
     }
 }

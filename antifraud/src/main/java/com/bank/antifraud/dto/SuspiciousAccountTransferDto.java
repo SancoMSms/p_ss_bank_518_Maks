@@ -1,10 +1,17 @@
 package com.bank.antifraud.dto;
 
-import lombok.Data;
+import com.bank.antifraud.enums.TransferType;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
 
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
+@Validated
 public class SuspiciousAccountTransferDto extends AbstractSuspiciousTransferDto {
 
     public void setAccountTransferId(Long accountTransferId) {
@@ -16,7 +23,7 @@ public class SuspiciousAccountTransferDto extends AbstractSuspiciousTransferDto 
     }
 
     @Override
-    public String getEntityType() {
-        return "ACCOUNT";
+    public TransferType getEntityType() {
+        return TransferType.ACCOUNT;
     }
 }

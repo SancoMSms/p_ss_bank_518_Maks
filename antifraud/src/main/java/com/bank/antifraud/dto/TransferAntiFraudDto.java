@@ -1,10 +1,18 @@
 package com.bank.antifraud.dto;
 
+import com.bank.antifraud.enums.TransferType;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TransferAntiFraudDto {
 
     @NotNull
@@ -14,11 +22,9 @@ public class TransferAntiFraudDto {
     private BigDecimal amount;
 
     @NotNull
-    private String entityType;
+    private TransferType entityType;
 
-    @NotNull
     private Boolean isBlocked;
 
-    @NotNull
     private Boolean isSuspicious;
 }

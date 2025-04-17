@@ -4,11 +4,7 @@ import com.bank.antifraud.dto.TransferAntiFraudDto;
 
 public interface SuspiciousTransferProducer {
 
-    void sendCreateEvent(TransferAntiFraudDto kafkaDto);
+    void sendApprovedEvent(TransferAntiFraudDto kafkaDto);
 
-    void sendUpdateEvent(TransferAntiFraudDto kafkaDto);
-
-    void sendDeleteEvent(TransferAntiFraudDto kafkaDto);
-
-    void sendGetEvent(String request);
+    void sendBlockedEvent(TransferAntiFraudDto kafkaDto);
 }
