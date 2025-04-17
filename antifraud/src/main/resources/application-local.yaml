@@ -24,3 +24,24 @@ spring:
     drop-first: ${LIQUIBASE_DROP_FIRST:false}
   application:
     name: anti-fraud-app
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: anti-fraud-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    retries: 3
+    max-poll-records: 100
+    auto-offset-reset-config: earliest
+    asks-config: all
+    trusted-packages: com.bank.antifraud.dto
+    group-id-config: antifraud-group
+  aop:
+    proxy-target-class: true
+  jpa:
+    hibernate:
+      ddl-auto: update
