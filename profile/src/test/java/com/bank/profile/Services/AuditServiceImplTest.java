@@ -5,46 +5,47 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 public class AuditServiceImplTest {
 
+    private static final String AUDIT_TOPIC = "audit.logs";
+
     @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate = mock(KafkaTemplate.class);
 
     private AuditServiceImpl auditService;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
         auditService = new AuditServiceImpl(kafkaTemplate);
     }
 
     @Test
     public void testLogAuditEvent() {
-        // Подготовка данных для логирования
-        String entityType = "User";
-        String operationType = "Create";
+        String entityType = "USER";
+        String operationType = "CREATE";
         String createdBy = "admin";
         String modifiedBy = "admin";
         String newEntityJson = "{\"name\":\"John\"}";
         String entityJson = "{\"name\":\"Doe\"}";
 
-        // Мокаем send() для имитации успешной отправки
-        // Мы возвращаем null, как будто операция завершена успешно
-        when(kafkaTemplate.send(eq("audit.logs"), anyString())).thenReturn(null);
+        when(kafkaTemplate.send(eq(AUDIT_TOPIC), anyString())).thenReturn(null);
 
-        // Вызываем метод
         auditService.logAuditEvent(entityType, operationType, createdBy, modifiedBy, newEntityJson, entityJson);
 
-        // Проверяем, что в списке auditLogs появилась новая запись
         List<Audit> auditLogs = auditService.getAllAuditLogs();
         assertEquals(1, auditLogs.size());
 
@@ -56,20 +57,15 @@ public class AuditServiceImplTest {
         assertEquals(newEntityJson, audit.getNewEntityJson());
         assertEquals(entityJson, audit.getEntityJson());
 
-        // Проверяем, что сообщение было отправлено в Kafka
-        verify(kafkaTemplate, times(1)).send(eq("audit.logs"), anyString());
+        verify(kafkaTemplate, times(1)).send(eq(AUDIT_TOPIC), anyString());
     }
 
     @Test
     public void testGetAllAuditLogs() {
-        // Добавляем несколько логов
-        auditService.logAuditEvent("User", "Create", "admin", "admin", "{\"name\":\"John\"}", "{\"name\":\"Doe\"}");
-        auditService.logAuditEvent("User", "Update", "admin", "admin", "{\"name\":\"John Updated\"}", "{\"name\":\"Doe Updated\"}");
+        auditService.logAuditEvent("USER", "CREATE", "admin", "admin", "{\"name\":\"John\"}", "{\"name\":\"Doe\"}");
+        auditService.logAuditEvent("USER", "UPDATE", "admin", "admin", "{\"name\":\"John Updated\"}", "{\"name\":\"Doe Updated\"}");
 
-        // Получаем все логи
         List<Audit> auditLogs = auditService.getAllAuditLogs();
-
-        // Проверяем, что количество логов верное
         assertEquals(2, auditLogs.size());
     }
 }

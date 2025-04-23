@@ -24,29 +24,34 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceImplTest {
 
-    @Mock
-    private ProfileRepository profileRepository;
+    private static final String CREATE_COUNT = "profile.create.count";
+    private static final String UPDATE_COUNT = "profile.update.count";
+    private static final String DELETE_COUNT = "profile.delete.count";
+    private static final String ERROR_COUNT = "profile.errors.count";
 
     @Mock
-    private ProfileMapper profileMapper;
+    private final ProfileRepository profileRepository = mock(ProfileRepository.class);
 
     @Mock
-    private KafkaErrorProducer kafkaErrorProducer;
+    private final ProfileMapper profileMapper = mock(ProfileMapper.class);
 
     @Mock
-    private MeterRegistry meterRegistry;
+    private final KafkaErrorProducer kafkaErrorProducer = mock(KafkaErrorProducer.class);
 
     @Mock
-    private Counter createCounter;
+    private final MeterRegistry meterRegistry = mock(MeterRegistry.class);
 
     @Mock
-    private Counter updateCounter;
+    private final Counter createCounter = mock(Counter.class);
 
     @Mock
-    private Counter deleteCounter;
+    private final Counter updateCounter = mock(Counter.class);
 
     @Mock
-    private Counter errorCounter;
+    private final Counter deleteCounter = mock(Counter.class);
+
+    @Mock
+    private final Counter errorCounter = mock(Counter.class);
 
     @InjectMocks
     private ProfileServiceImpl service;
@@ -59,10 +64,10 @@ class ProfileServiceImplTest {
         dto = new ProfileDto();
         entity = new Profile();
 
-        when(meterRegistry.counter("profile.create.count")).thenReturn(createCounter);
-        when(meterRegistry.counter("profile.update.count")).thenReturn(updateCounter);
-        when(meterRegistry.counter("profile.delete.count")).thenReturn(deleteCounter);
-        when(meterRegistry.counter("profile.errors.count")).thenReturn(errorCounter);
+        when(meterRegistry.counter(CREATE_COUNT)).thenReturn(createCounter);
+        when(meterRegistry.counter(UPDATE_COUNT)).thenReturn(updateCounter);
+        when(meterRegistry.counter(DELETE_COUNT)).thenReturn(deleteCounter);
+        when(meterRegistry.counter(ERROR_COUNT)).thenReturn(errorCounter);
 
         service = new ProfileServiceImpl(profileRepository, profileMapper, kafkaErrorProducer, meterRegistry);
     }

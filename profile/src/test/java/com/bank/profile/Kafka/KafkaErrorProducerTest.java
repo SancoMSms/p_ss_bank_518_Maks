@@ -4,34 +4,24 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class KafkaErrorProducerTest {
 
-    @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate = mock(KafkaTemplate.class);
+    private final MeterRegistry meterRegistry = mock(MeterRegistry.class);
+    private final Counter errorMessagesCounter = mock(Counter.class);
 
-    @Mock
-    private MeterRegistry meterRegistry;
-
-    @Mock
-    private Counter errorMessagesCounter;
-
-    @InjectMocks
     private KafkaErrorProducer kafkaErrorProducer;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         when(meterRegistry.counter("profile.errors.send.count")).thenReturn(errorMessagesCounter);
-
         kafkaErrorProducer = new KafkaErrorProducer(kafkaTemplate, meterRegistry);
         ReflectionTestUtils.setField(kafkaErrorProducer, "errorTopic", "profile.errors");
     }
@@ -42,7 +32,7 @@ class KafkaErrorProducerTest {
 
         kafkaErrorProducer.sendError(message);
 
-        verify(kafkaTemplate).send(eq("profile.errors"), eq(message));
+        verify(kafkaTemplate).send("profile.errors", message);
         verify(errorMessagesCounter).increment();
     }
 
@@ -51,11 +41,11 @@ class KafkaErrorProducerTest {
         String message = "Kafka send failed";
 
         doThrow(new RuntimeException("Kafka is down"))
-                .when(kafkaTemplate).send(eq("profile.errors"), eq(message));
+                .when(kafkaTemplate).send("profile.errors", message);
 
         kafkaErrorProducer.sendError(message);
 
-        verify(kafkaTemplate).send(eq("profile.errors"), eq(message));
-        verify(errorMessagesCounter, never()).increment(); // Ошибка = не инкрементим
+        verify(kafkaTemplate).send("profile.errors", message);
+        verify(errorMessagesCounter, never()).increment();
     }
 }

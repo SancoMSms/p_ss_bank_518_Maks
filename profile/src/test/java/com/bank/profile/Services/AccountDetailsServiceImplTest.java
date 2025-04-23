@@ -8,6 +8,7 @@ import com.bank.profile.Repositories.AccountDetailsRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,27 +20,42 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AccountDetailsServiceImplTest {
 
+    private static final String CREATE_METRIC = "accountDetails.create.count";
+    private static final String UPDATE_METRIC = "accountDetails.update.count";
+    private static final String DELETE_METRIC = "accountDetails.delete.count";
+    private static final String ERROR_METRIC = "accountDetails.errors.count";
+
     @Mock
-    private AccountDetailsRepository accountDetailsRepository;
+    private final AccountDetailsRepository accountDetailsRepository = null;
+
     @Mock
-    private AccountDetailsMapper accountDetailsMapper;
+    private final AccountDetailsMapper accountDetailsMapper = null;
+
     @Mock
-    private KafkaErrorProducer kafkaErrorProducer;
+    private final KafkaErrorProducer kafkaErrorProducer = null;
+
     @Mock
-    private MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry = null;
+
     @Mock
-    private Counter createCounter;
+    private final Counter createCounter = null;
+
     @Mock
-    private Counter updateCounter;
+    private final Counter updateCounter = null;
+
     @Mock
-    private Counter deleteCounter;
+    private final Counter deleteCounter = null;
+
     @Mock
-    private Counter errorCounter;
+    private final Counter errorCounter = null;
 
     @InjectMocks
     private AccountDetailsServiceImpl service;
@@ -52,15 +68,16 @@ class AccountDetailsServiceImplTest {
         dto = new AccountDetailsDto();
         entity = new AccountDetails();
 
-        when(meterRegistry.counter("accountDetails.create.count")).thenReturn(createCounter);
-        when(meterRegistry.counter("accountDetails.update.count")).thenReturn(updateCounter);
-        when(meterRegistry.counter("accountDetails.delete.count")).thenReturn(deleteCounter);
-        when(meterRegistry.counter("accountDetails.errors.count")).thenReturn(errorCounter);
+        when(meterRegistry.counter(CREATE_METRIC)).thenReturn(createCounter);
+        when(meterRegistry.counter(UPDATE_METRIC)).thenReturn(updateCounter);
+        when(meterRegistry.counter(DELETE_METRIC)).thenReturn(deleteCounter);
+        when(meterRegistry.counter(ERROR_METRIC)).thenReturn(errorCounter);
 
         service = new AccountDetailsServiceImpl(accountDetailsRepository, accountDetailsMapper, kafkaErrorProducer, meterRegistry);
     }
 
     @Test
+    @DisplayName("Должен сохранить AccountDetails и вернуть сущность")
     void testCreate_shouldSaveEntity() {
         when(accountDetailsMapper.toEntity(dto)).thenReturn(entity);
         when(accountDetailsRepository.save(entity)).thenReturn(entity);
@@ -73,6 +90,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен обновить AccountDetails и вернуть сущность")
     void testUpdate_shouldSaveEntity() {
         when(accountDetailsMapper.toEntity(dto)).thenReturn(entity);
         when(accountDetailsRepository.save(entity)).thenReturn(entity);
@@ -85,6 +103,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен удалить AccountDetails по ID")
     void testDelete_shouldDeleteById() {
         Long id = 1L;
         service.delete(id);
@@ -94,6 +113,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен вернуть AccountDetails по ID")
     void testGetAccountDetails_shouldReturnEntity() {
         Long id = 1L;
         when(accountDetailsRepository.getById(id)).thenReturn(entity);
@@ -105,6 +125,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен вернуть все AccountDetails")
     void testGetAllAccountDetails_shouldReturnAll() {
         List<AccountDetails> list = Arrays.asList(entity, new AccountDetails());
         when(accountDetailsRepository.findAll()).thenReturn(list);
@@ -116,6 +137,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен отправить ошибку в Kafka при исключении в getAccountDetails")
     void testGetAccountDetails_shouldSendErrorOnException() {
         Long id = 1L;
         RuntimeException exception = new RuntimeException("Get failed");
@@ -129,6 +151,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен отправить ошибку в Kafka при исключении в delete")
     void testDelete_shouldSendErrorOnException() {
         Long id = 1L;
         doThrow(new RuntimeException("Delete failed")).when(accountDetailsRepository).deleteById(id);
@@ -141,6 +164,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен отправить ошибку в Kafka при исключении в create")
     void testCreate_shouldSendErrorOnException() {
         when(accountDetailsMapper.toEntity(dto)).thenReturn(entity);
         when(accountDetailsRepository.save(entity)).thenThrow(new RuntimeException("Create failed"));
@@ -153,6 +177,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен отправить ошибку в Kafka при исключении в update")
     void testUpdate_shouldSendErrorOnException() {
         when(accountDetailsMapper.toEntity(dto)).thenReturn(entity);
         when(accountDetailsRepository.save(entity)).thenThrow(new RuntimeException("Update failed"));
@@ -165,6 +190,7 @@ class AccountDetailsServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен отправить ошибку в Kafka при исключении в getAllAccountDetails")
     void testGetAllAccountDetails_shouldSendErrorOnException() {
         when(accountDetailsRepository.findAll()).thenThrow(new RuntimeException("Fetch failed"));
 

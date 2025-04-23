@@ -24,29 +24,34 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PassportServiceImplTest {
 
-    @Mock
-    private PassportRepository passportRepository;
+    private static final String CREATE_COUNT = "passport.create.count";
+    private static final String UPDATE_COUNT = "passport.update.count";
+    private static final String DELETE_COUNT = "passport.delete.count";
+    private static final String ERROR_COUNT = "passport.errors.count";
 
     @Mock
-    private PassportMapper passportMapper;
+    private final PassportRepository passportRepository = mock(PassportRepository.class);
 
     @Mock
-    private KafkaErrorProducer kafkaErrorProducer;
+    private final PassportMapper passportMapper = mock(PassportMapper.class);
 
     @Mock
-    private MeterRegistry meterRegistry;
+    private final KafkaErrorProducer kafkaErrorProducer = mock(KafkaErrorProducer.class);
 
     @Mock
-    private Counter createCounter;
+    private final MeterRegistry meterRegistry = mock(MeterRegistry.class);
 
     @Mock
-    private Counter updateCounter;
+    private final Counter createCounter = mock(Counter.class);
 
     @Mock
-    private Counter deleteCounter;
+    private final Counter updateCounter = mock(Counter.class);
 
     @Mock
-    private Counter errorCounter;
+    private final Counter deleteCounter = mock(Counter.class);
+
+    @Mock
+    private final Counter errorCounter = mock(Counter.class);
 
     @InjectMocks
     private PassportServiceImpl service;
@@ -59,10 +64,10 @@ class PassportServiceImplTest {
         dto = new PassportDto();
         entity = new Passport();
 
-        when(meterRegistry.counter("passport.create.count")).thenReturn(createCounter);
-        when(meterRegistry.counter("passport.update.count")).thenReturn(updateCounter);
-        when(meterRegistry.counter("passport.delete.count")).thenReturn(deleteCounter);
-        when(meterRegistry.counter("passport.errors.count")).thenReturn(errorCounter);
+        when(meterRegistry.counter(CREATE_COUNT)).thenReturn(createCounter);
+        when(meterRegistry.counter(UPDATE_COUNT)).thenReturn(updateCounter);
+        when(meterRegistry.counter(DELETE_COUNT)).thenReturn(deleteCounter);
+        when(meterRegistry.counter(ERROR_COUNT)).thenReturn(errorCounter);
 
         service = new PassportServiceImpl(passportRepository, passportMapper, kafkaErrorProducer, meterRegistry);
     }

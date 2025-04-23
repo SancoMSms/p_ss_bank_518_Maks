@@ -24,29 +24,34 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class RegistrationServiceImplTest {
 
-    @Mock
-    private RegistrationRepository registrationRepository;
+    private static final String CREATE_COUNT = "registration.create.count";
+    private static final String UPDATE_COUNT = "registration.update.count";
+    private static final String DELETE_COUNT = "registration.delete.count";
+    private static final String ERROR_COUNT = "registration.errors.count";
 
     @Mock
-    private RegistrationMappers registrationMappers;
+    private final RegistrationRepository registrationRepository = mock(RegistrationRepository.class);
 
     @Mock
-    private KafkaErrorProducer kafkaErrorProducer;
+    private final RegistrationMappers registrationMappers = mock(RegistrationMappers.class);
 
     @Mock
-    private MeterRegistry meterRegistry;
+    private final KafkaErrorProducer kafkaErrorProducer = mock(KafkaErrorProducer.class);
 
     @Mock
-    private Counter createCounter;
+    private final MeterRegistry meterRegistry = mock(MeterRegistry.class);
 
     @Mock
-    private Counter updateCounter;
+    private final Counter createCounter = mock(Counter.class);
 
     @Mock
-    private Counter deleteCounter;
+    private final Counter updateCounter = mock(Counter.class);
 
     @Mock
-    private Counter errorCounter;
+    private final Counter deleteCounter = mock(Counter.class);
+
+    @Mock
+    private final Counter errorCounter = mock(Counter.class);
 
     @InjectMocks
     private RegistrationServiceImpl service;
@@ -59,10 +64,10 @@ class RegistrationServiceImplTest {
         dto = new RegistrationDto();
         entity = new Registration();
 
-        when(meterRegistry.counter("registration.create.count")).thenReturn(createCounter);
-        when(meterRegistry.counter("registration.update.count")).thenReturn(updateCounter);
-        when(meterRegistry.counter("registration.delete.count")).thenReturn(deleteCounter);
-        when(meterRegistry.counter("registration.errors.count")).thenReturn(errorCounter);
+        when(meterRegistry.counter(CREATE_COUNT)).thenReturn(createCounter);
+        when(meterRegistry.counter(UPDATE_COUNT)).thenReturn(updateCounter);
+        when(meterRegistry.counter(DELETE_COUNT)).thenReturn(deleteCounter);
+        when(meterRegistry.counter(ERROR_COUNT)).thenReturn(errorCounter);
 
         service = new RegistrationServiceImpl(registrationRepository, registrationMappers, kafkaErrorProducer, meterRegistry);
     }

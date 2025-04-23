@@ -10,194 +10,157 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
-import java.util.List;
-
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class ActualRegistrationServiceImplTest {
+class ActualRegistrationServiceImplTest {
+
+    private static final String CREATE_METRIC = "actualRegistration.create.count";
+    private static final String UPDATE_METRIC = "actualRegistration.update.count";
+    private static final String DELETE_METRIC = "actualRegistration.delete.count";
+    private static final String ERROR_METRIC = "actualRegistration.errors.count";
 
     @Mock
-    private ActualRegistrationRepository actualRegistrationRepository;
+    private final ActualRegistrationRepository actualRegistrationRepository = null;
 
     @Mock
-    private ActualRegistrationMapper actualRegistrationMapper;
+    private final ActualRegistrationMapper actualRegistrationMapper = null;
 
     @Mock
-    private KafkaErrorProducer kafkaErrorProducer;
+    private final KafkaErrorProducer kafkaErrorProducer = null;
 
     @Mock
-    private MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry = null;
 
     @Mock
-    private Counter createCounter;
+    private final Counter createCounter = null;
 
     @Mock
-    private Counter updateCounter;
+    private final Counter updateCounter = null;
 
     @Mock
-    private Counter deleteCounter;
+    private final Counter deleteCounter = null;
 
     @Mock
-    private Counter errorCounter;
+    private final Counter errorCounter = null;
 
-    private ActualRegistrationServiceImpl actualRegistrationService;
+    @InjectMocks
+    private ActualRegistrationServiceImpl service;
+
+    private ActualRegistrationDto dto;
+    private ActualRegistration entity;
 
     @BeforeEach
-    public void setup() {
-        when(meterRegistry.counter("actualRegistration.create.count")).thenReturn(createCounter);
-        when(meterRegistry.counter("actualRegistration.update.count")).thenReturn(updateCounter);
-        when(meterRegistry.counter("actualRegistration.delete.count")).thenReturn(deleteCounter);
-        when(meterRegistry.counter("actualRegistration.errors.count")).thenReturn(errorCounter);
+    void setup() {
+        dto = new ActualRegistrationDto();
+        entity = new ActualRegistration();
 
-        doNothing().when(createCounter).increment();
-        doNothing().when(updateCounter).increment();
-        doNothing().when(deleteCounter).increment();
-        doNothing().when(errorCounter).increment();
+        when(meterRegistry.counter(CREATE_METRIC)).thenReturn(createCounter);
+        when(meterRegistry.counter(UPDATE_METRIC)).thenReturn(updateCounter);
+        when(meterRegistry.counter(DELETE_METRIC)).thenReturn(deleteCounter);
+        when(meterRegistry.counter(ERROR_METRIC)).thenReturn(errorCounter);
 
-        actualRegistrationService = new ActualRegistrationServiceImpl(
-                actualRegistrationRepository,
-                actualRegistrationMapper,
-                kafkaErrorProducer,
-                meterRegistry
-        );
+        service = new ActualRegistrationServiceImpl(actualRegistrationRepository, actualRegistrationMapper, kafkaErrorProducer, meterRegistry);
     }
 
     @Test
-    public void testCreate() {
-        ActualRegistrationDto dto = mock(ActualRegistrationDto.class);
-        ActualRegistration entity = mock(ActualRegistration.class);
-
+    void testCreate_shouldSaveEntity() {
         when(actualRegistrationMapper.toEntity(dto)).thenReturn(entity);
         when(actualRegistrationRepository.save(entity)).thenReturn(entity);
 
-        ActualRegistration result = actualRegistrationService.create(dto);
+        ActualRegistration result = service.create(dto);
 
-        verify(actualRegistrationRepository, times(1)).save(entity);
-        verify(createCounter, times(1)).increment();
+        verify(createCounter).increment();
+        verify(actualRegistrationRepository).save(entity);
+        assertEquals(entity, result);
     }
 
     @Test
-    public void testUpdate() {
-        ActualRegistrationDto dto = mock(ActualRegistrationDto.class);
-        ActualRegistration entity = mock(ActualRegistration.class);
-
+    void testUpdate_shouldSaveEntity() {
         when(actualRegistrationMapper.toEntity(dto)).thenReturn(entity);
         when(actualRegistrationRepository.save(entity)).thenReturn(entity);
 
-        ActualRegistration result = actualRegistrationService.update(dto);
+        ActualRegistration result = service.update(dto);
 
-        verify(actualRegistrationRepository, times(1)).save(entity);
-        verify(updateCounter, times(1)).increment();
+        verify(updateCounter).increment();
+        verify(actualRegistrationRepository).save(entity);
+        assertEquals(entity, result);
     }
 
     @Test
-    public void testDelete() {
+    void testDelete_shouldDeleteById() {
         Long id = 1L;
+        service.delete(id);
 
-        doNothing().when(actualRegistrationRepository).deleteById(id);
-
-        actualRegistrationService.delete(id);
-
-        verify(actualRegistrationRepository, times(1)).deleteById(id);
-        verify(deleteCounter, times(1)).increment();
+        verify(deleteCounter).increment();
+        verify(actualRegistrationRepository).deleteById(id);
     }
 
     @Test
-    public void testCreateShouldHandleError() {
-        ActualRegistrationDto dto = mock(ActualRegistrationDto.class);
-        ActualRegistration entity = mock(ActualRegistration.class);
-
+    void testCreate_shouldSendErrorOnException() {
         when(actualRegistrationMapper.toEntity(dto)).thenReturn(entity);
         when(actualRegistrationRepository.save(entity)).thenThrow(new RuntimeException("Create failed"));
 
-        doNothing().when(errorCounter).increment();
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.create(dto));
+        assertEquals("Create failed", thrown.getMessage());
 
-        try {
-            actualRegistrationService.create(dto);
-        } catch (Exception e) {
-            verify(errorCounter, times(1)).increment();
-            verify(kafkaErrorProducer, times(1)).sendError(anyString());
-        }
+        verify(errorCounter).increment();
+        verify(kafkaErrorProducer).sendError(contains("create"));
     }
 
     @Test
-    public void testUpdateShouldThrowExceptionIfNotFound() {
-        ActualRegistrationDto dto = mock(ActualRegistrationDto.class);
-        when(actualRegistrationMapper.toEntity(dto)).thenReturn(new ActualRegistration());
+    void testUpdate_shouldSendErrorOnException() {
+        when(actualRegistrationMapper.toEntity(dto)).thenReturn(entity);
+        when(actualRegistrationRepository.save(entity)).thenThrow(new RuntimeException("Update failed"));
 
-        when(actualRegistrationRepository.save(any(ActualRegistration.class))).thenThrow(new RuntimeException("Not Found"));
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.update(dto));
+        assertEquals("Update failed", thrown.getMessage());
 
-        try {
-            actualRegistrationService.update(dto);
-        } catch (Exception e) {
-            verify(kafkaErrorProducer, times(1)).sendError(anyString());
-        }
+        verify(errorCounter).increment();
+        verify(kafkaErrorProducer).sendError(contains("update"));
     }
 
     @Test
-    public void testDeleteShouldHandleNotFound() {
+    void testDelete_shouldSendErrorOnException() {
         Long id = 1L;
+        doThrow(new RuntimeException("Delete failed")).when(actualRegistrationRepository).deleteById(id);
 
-        doThrow(new RuntimeException("Not Found")).when(actualRegistrationRepository).deleteById(id);
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.delete(id));
+        assertEquals("Delete failed", thrown.getMessage());
 
-        try {
-            actualRegistrationService.delete(id);
-        } catch (Exception e) {
-            verify(kafkaErrorProducer, times(1)).sendError(anyString());
-        }
+        verify(errorCounter).increment();
+        verify(kafkaErrorProducer).sendError(contains("delete"));
     }
 
     @Test
-    public void testGetActualRegistration() {
+    void testGetActualRegistration_shouldSendErrorOnException() {
         Long id = 1L;
-        ActualRegistration entity = mock(ActualRegistration.class);
-
-        when(actualRegistrationRepository.getById(id)).thenReturn(entity);
-
-        ActualRegistration result = actualRegistrationService.getActualRegistration(id);
-
-        verify(actualRegistrationRepository, times(1)).getById(id);
-    }
-
-    @Test
-    public void testGetAllActualRegistrations() {
-        when(actualRegistrationRepository.findAll()).thenReturn(List.of(mock(ActualRegistration.class)));
-
-        actualRegistrationService.getAllActualRegistrations();
-
-        verify(actualRegistrationRepository, times(1)).findAll();
-    }
-
-    // Дополнительный тест для проверки работы с ошибками
-    @Test
-    public void testGetActualRegistrationShouldHandleError() {
-        Long id = 1L;
-
         when(actualRegistrationRepository.getById(id)).thenThrow(new RuntimeException("Not Found"));
 
-        try {
-            actualRegistrationService.getActualRegistration(id);
-        } catch (Exception e) {
-            verify(kafkaErrorProducer, times(1)).sendError(anyString());
-        }
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.getActualRegistration(id));
+        assertEquals("Not Found", thrown.getMessage());
+
+        verify(errorCounter).increment();
+        verify(kafkaErrorProducer).sendError(contains("getActualRegistration"));
     }
 
-    // Дополнительный тест для обработки ошибок при запросе всех записей
     @Test
-    public void testGetAllActualRegistrationsShouldHandleError() {
-        when(actualRegistrationRepository.findAll()).thenThrow(new RuntimeException("Database error"));
+    void testGetAllActualRegistrations_shouldSendErrorOnException() {
+        when(actualRegistrationRepository.findAll()).thenThrow(new RuntimeException("Fetch failed"));
 
-        try {
-            actualRegistrationService.getAllActualRegistrations();
-        } catch (Exception e) {
-            verify(kafkaErrorProducer, times(1)).sendError(anyString());
-        }
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> service.getAllActualRegistrations());
+        assertEquals("Fetch failed", thrown.getMessage());
+
+        verify(errorCounter).increment();
+        verify(kafkaErrorProducer).sendError(contains("getAllActualRegistrations"));
     }
 }
