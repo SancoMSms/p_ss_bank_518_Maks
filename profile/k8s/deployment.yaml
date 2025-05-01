@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-service
+  template:
+    metadata:
+      labels:
+        app: profile-service
+    spec:
+      containers:
+        - name: profile-service
+          image: ghcr.io/sancomsms/my-app:latest
+          ports:
+            - containerPort: 8085
+          envFrom:
+            - configMapRef:
+                name: profile-config
+            - secretRef:
+                name: profile-db-secret
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      # imagePullSecrets удалён
